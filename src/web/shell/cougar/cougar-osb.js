@@ -30,13 +30,36 @@
   const SPLITS = { 'split-tw': 'tw', 'split': 'h', 'split-bw': 'bw' };
   const SPLIT_SHARE = { tw: 2 / 3, h: 1 / 2, bw: 1 / 3 };
 
-  // The keys a pane owns, in the order a page's items fill them. Rows first, so a page's first item
-  // (MAIN on nearly every page) is always the top-left key of its pane.
+  // The keys a pane owns, in the order a page's items fill them. A page's first item (MAIN on nearly
+  // every page) is always the top-left key of its pane. Full view fills the top row and the upper side
+  // keys before the bottom row, so a page's first seven items sit on the same keys in full view as in
+  // the top pane of a split, and its last ones (settings, see PRIORITY) fall to the bottom row.
   const PANE_SLOTS = {
-    full:   TOP.concat(BOTTOM, ['L1', 'R1', 'L5', 'R5']),
+    full:   TOP.concat(['L1', 'R1'], BOTTOM, ['L5', 'R5']),
     top:    TOP.concat(['L1', 'R1']),
     bottom: BOTTOM.concat(['L5', 'R5']),
   };
+
+  // The order a page's items fill its keys, by action: the most-used first, settings last. A pane
+  // holds seven keys, so the first seven are what a split pane shows without paging. Actions not
+  // listed (an extension's own page on MAIN, say) follow the listed ones in their given order.
+  //   main — the flight pages, then mission data, squads, extensions, and CFG last.
+  //   map/tgp — controls before their CFG page. Full view pins these pages' keys instead (FULL_PINS),
+  //             so this order is what a split pane flows.
+  const PRIORITY = {
+    main: ['map', 'tgp', 'wpn', 'rdr', 'rwr', 'tgt', 'adi', 'akf', 'sqd', 'ext', 'hud'],
+    map:  ['main', 'flw', 'grid', 'wpt', 'slew', 'rt-next', 'rt-prev', 'wpt-next', 'wpt-prev', 'mapcfg'],
+    tgp:  ['main', 'tgp-manual-toggle', 'tgp-point-track', 'tgp-manual-reset', 'tgp-mark-steerpoint',
+           'tgp-view-wtv', 'tgp-view-stv', 'tgp-ir-off', 'tgp-ir-on', 'tgpcfg'],
+  };
+  function order(page, items) {
+    const pri = PRIORITY[page];
+    if (!pri) return (items || []).slice();
+    const rank = function (item) { const i = pri.indexOf(item.action); return i === -1 ? pri.length : i; };
+    return (items || []).map(function (item, i) { return { item: item, i: i }; })
+      .sort(function (a, b) { return rank(a.item) - rank(b.item) || a.i - b.i; })
+      .map(function (x) { return x.item; });
+  }
 
   // Which pane each corner rocker belongs to in a split. In full view the bottom pair is the
   // display's own contrast/brightness instead.
@@ -93,11 +116,12 @@
   // Pinned placements for pages whose keys must not move when an item comes or goes. A physical key
   // is learned by position, so MAP's route keys keep their buttons even while hidden for want of a
   // route. Keyed by action; pane 'full' only — a split pane flows them instead.
+  // Settings take the bottom-right key (B5), as on MAIN.
   const FULL_PINS = {
-    map: { main: 'T1', grid: 'T2', flw: 'T3', mapcfg: 'T4', wpt: 'T5',
-           'rt-next': 'B1', 'rt-prev': 'B2', 'wpt-next': 'B3', 'wpt-prev': 'B4', slew: 'B5' },
-    tgp: { main: 'T1', tgpcfg: 'T2', 'tgp-manual-toggle': 'T3', 'tgp-point-track': 'T4', 'tgp-manual-reset': 'T5',
-           'tgp-view-wtv': 'B1', 'tgp-view-stv': 'B2', 'tgp-ir-off': 'B3', 'tgp-ir-on': 'B4', 'tgp-mark-steerpoint': 'B5' },
+    map: { main: 'T1', flw: 'T2', grid: 'T3', wpt: 'T4', slew: 'T5',
+           'rt-next': 'B1', 'rt-prev': 'B2', 'wpt-next': 'B3', 'wpt-prev': 'B4', mapcfg: 'B5' },
+    tgp: { main: 'T1', 'tgp-manual-toggle': 'T2', 'tgp-point-track': 'T3', 'tgp-manual-reset': 'T4', 'tgp-mark-steerpoint': 'T5',
+           'tgp-view-wtv': 'B1', 'tgp-view-stv': 'B2', 'tgp-ir-off': 'B3', 'tgp-ir-on': 'B4', tgpcfg: 'B5' },
     wpn: { main: 'T1', 'master-arms-on': 'B1', 'master-arms-off': 'B2', 'combat-mode-aa': 'B4', 'combat-mode-ag': 'B5' },
   };
 
@@ -130,8 +154,8 @@
     TOP: TOP, BOTTOM: BOTTOM, LEFT: LEFT, RIGHT: RIGHT, ALL: ALL,
     SHELL_KEYS: SHELL_KEYS, SPLITS: SPLITS, SPLIT_SHARE: SPLIT_SHARE,
     PANE_SLOTS: PANE_SLOTS, ROCKER_PANE: ROCKER_PANE, ROCKER_PM: ROCKER_PM, FULL_PINS: FULL_PINS,
-    DISPLAY: DISPLAY,
-    rockerActions: rockerActions, place: place, pinFor: pinFor, stepDisplay: stepDisplay, profileName: profileName,
+    PRIORITY: PRIORITY, DISPLAY: DISPLAY,
+    rockerActions: rockerActions, order: order, place: place, pinFor: pinFor, stepDisplay: stepDisplay, profileName: profileName,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.CougarOsb = api;
