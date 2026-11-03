@@ -1,0 +1,315 @@
+/* COUGAR layout (docs/cougar-mfd.md). The browser window sits behind a physical OSB frame, so there is
+   no bezel: the window is the frame's display, and every label sits on the glass at the edge beside
+   the frame button that presses it. Palette comes from the shared theme tokens, so pages render here
+   exactly as they do under the other layouts. */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--no-bg);
+  overflow: hidden;
+  font-family: var(--no-font);
+}
+
+/* ── The glass ─────────────────────────────────────────────────────────────────────────
+   A 7x7 grid: the outer ring is the OSB frame (corner rockers, T1-T5/B1-B5 across the top and bottom,
+   L1-L5/R1-R5 down the sides), the inner 5x5 is the page area. The five middle tracks are equal, so
+   each OSB cell lines up with its share of the page, as the frame's buttons are spaced along its
+   window.
+     --band  the height of the top and bottom label rows
+     --side  the width of the side label columns, fitted to the widest side label (cougar.js fitSide)
+   Brightness and contrast (the full-view bottom rockers) are a filter on the whole glass, pages
+   included: the browser cannot drive the monitor itself. */
+.glass {
+  --band: clamp(30px, 6.5vh, 46px);
+  --side: 64px;
+  --brightness: 1;
+  --contrast: 1;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: var(--side) repeat(5, minmax(0, 1fr)) var(--side);
+  grid-template-rows: var(--band) repeat(5, minmax(0, 1fr)) var(--band);
+  filter: brightness(var(--brightness)) contrast(var(--contrast));
+}
+
+/* The telemetry tap — a data source, never seen. Full-size so the view inside lays out and ticks
+   normally (see f35.css #map-tap for why it isn't 1px or display:none). */
+#map-tap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Page area ─────────────────────────────────────────────────────────────────────────
+   The inner 5x5. A pane per page frame, stacked; flex-grow carries each pane's share of the height
+   (cougar.js applySplit). FULL_BLEED pages in full view take the whole glass, ring included, and the
+   labels sit over the picture on a scrim. */
+.panes {
+  grid-row: 2 / 7;
+  grid-column: 2 / 7;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  z-index: 0;
+}
+.glass.full-bleed .panes {
+  grid-row: 1 / -1;
+  grid-column: 1 / -1;
+}
+
+.pane {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+/* The seam between stacked panes: one line, drawn by the lower pane. */
+.pane + .pane { border-top: 2px solid var(--no-label-line, rgba(var(--no-label-rgb), 0.35)); }
+
+.page-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--no-bg);
+}
+
+/* MAIN's centre: which MFD this window is (its profile name). */
+.pane-ident {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  color: var(--no-label);
+  letter-spacing: 3px;
+}
+.pane-ident[hidden] { display: none; }
+.pane-ident-brand { font-size: 12px; opacity: 0.6; }
+.pane-ident-name { font-size: clamp(16px, 4vh, 30px); }
+
+/* SOI focus ring on the focused pane, the same white ring the other layouts draw. Only meaningful in
+   a split; in full view it rings the whole page area. */
+.pane.soi::after {
+  content: '';
+  position: absolute;
+  inset: var(--no-soi-inset, 0px);
+  border: var(--no-soi-width, 2px) var(--no-soi-style, solid) var(--no-soi);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ── OSB cells ─────────────────────────────────────────────────────────────────────────
+   One per frame button, placed by cougar.js. A cell holds at most one label. */
+.osb {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.nav-item {
+  pointer-events: auto;
+  padding: 3px 6px;
+  border: 0;
+  background: none;
+  appearance: none;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: clamp(14px, 2.6vh, 20px);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  color: var(--no-label);
+  cursor: pointer;
+}
+.glass.full-bleed .nav-item,
+.glass.full-bleed .rocker-half {
+  background: var(--no-scrim);
+  border-radius: 2px;
+}
+.nav-item:active { opacity: 0.7; }
+
+/* Engaged toggle (FLW, ARM, the live sibling of a switch, PIN while pinned), as on the other layouts. */
+.nav-item.on {
+  color: var(--no-amber);
+  outline: 1px solid var(--no-amber);
+}
+/* The SOI cursor — the label SELECT will press. */
+.nav-item.cursor {
+  color: var(--no-ink);
+  background: var(--no-soi);
+}
+/* An action this layout can't do yet: shown so the key's meaning is visible, but inert. */
+.nav-item.pending,
+.nav-item:disabled {
+  color: var(--no-gray);
+  cursor: default;
+}
+.nav-item.pending:active,
+.nav-item:disabled:active { opacity: 1; }
+
+/* SLEW armed (issue #103). */
+@keyframes slew-blink { 50% { color: var(--no-amber); outline-color: var(--no-amber); } }
+.nav-item.blink { outline: 1px solid transparent; animation: slew-blink 1s steps(1, end) infinite; }
+@media (prefers-reduced-motion: reduce) { .nav-item.blink { animation: none; color: var(--no-amber); outline-color: var(--no-amber); } }
+
+/* Hover only where a pointer can take it back (see f35.css's note on touch). */
+@media (hover: hover) {
+  .nav-item:hover:not(:disabled):not(.pending) { color: var(--no-ink); background: var(--no-label); }
+  .nav-item.on:hover { color: var(--no-ink); background: var(--no-amber); }
+  .rocker-half:hover:not(:disabled) { color: var(--no-ink); background: var(--no-label); }
+}
+
+/* Shell keys (FULL, PIN, SWAP, split presets): a little dimmer than page labels, so the page's own
+   keys read first. The split presets are drawn as the arrangement they pick. */
+.nav-item.shell-key { font-size: clamp(11px, 2vh, 15px); opacity: 0.85; }
+.split-icon {
+  display: block;
+  width: 26px;
+  height: 20px;
+}
+.split-icon rect { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.split-icon line { stroke: currentColor; stroke-width: 1.5; }
+
+/* ── Rockers ───────────────────────────────────────────────────────────────────────────
+   Each corner holds one rocker: a small caption naming what it does on this page, over its two
+   halves. A blank rocker shows nothing. */
+.rocker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.rocker.tl { grid-row: 1; grid-column: 1; }
+.rocker.tr { grid-row: 1; grid-column: 7; }
+.rocker.bl { grid-row: 7; grid-column: 1; }
+.rocker.br { grid-row: 7; grid-column: 7; }
+
+.rocker-caption {
+  font-size: 9px;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: var(--no-label);
+  opacity: 0.7;
+}
+.rocker-halves { display: flex; gap: 2px; }
+.rocker-half {
+  min-width: 22px;
+  padding: 1px 3px;
+  border: 1px solid rgba(var(--no-label-rgb), 0.35);
+  border-radius: 2px;
+  background: none;
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--no-label);
+  cursor: pointer;
+}
+.rocker-half:active { opacity: 0.7; }
+.rocker-half:disabled { color: var(--no-gray); border-color: transparent; cursor: default; }
+
+/* ── Profile picker ────────────────────────────────────────────────────────────────────── */
+.picker {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--no-bg);
+}
+.picker[hidden] { display: none; }
+.picker-panel {
+  width: min(420px, 90vw);
+  color: var(--no-label);
+  letter-spacing: 1px;
+}
+.picker-title { margin: 0 0 8px; font-size: 22px; font-weight: normal; letter-spacing: 3px; }
+.picker-tip { margin: 0 0 16px; font-size: 13px; line-height: 1.4; opacity: 0.75; }
+.picker-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.picker-btn,
+.picker-list button {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(var(--no-label-rgb), 0.45);
+  background: none;
+  color: var(--no-label);
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-align: left;
+  cursor: pointer;
+}
+.picker-list button:hover,
+.picker-btn:hover { background: var(--no-label); color: var(--no-ink); }
+.picker-new { display: flex; gap: 6px; }
+.picker-new input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(var(--no-label-rgb), 0.45);
+  background: var(--no-bg);
+  color: var(--no-label);
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.picker-new .picker-btn { width: auto; text-align: center; }
+.picker-shells { margin-top: 20px; display: flex; gap: 16px; font-size: 12px; }
+.picker-link { color: var(--no-label); opacity: 0.7; }
+
+/* ── Connection-lost banner (issue #79) ─────────────────────────────────────────────────
+   Across the top of the page area, under the top label row. */
+.conn-lost-banner {
+  grid-row: 2;
+  grid-column: 2 / 7;
+  align-self: start;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--no-panel-bg);
+  border-bottom: 1px solid rgba(var(--no-red-rgb), 0.45);
+  color: var(--no-red);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  z-index: 10;
+}
+.conn-lost-banner[hidden] { display: none; }
+.conn-lost-banner .conn-lost-msg { flex: 1; }
+.conn-lost-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: var(--no-red);
+  box-shadow: 0 0 6px rgba(var(--no-red-rgb), 0.9);
+  animation: conn-lost-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) { .conn-lost-dot { animation: none; } }
+@keyframes conn-lost-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.conn-lost-dismiss {
+  appearance: none; border: none; background: transparent; cursor: pointer;
+  color: inherit; opacity: 0.65; flex: none;
+  font-family: var(--no-font); font-size: 13px; line-height: 1; padding: 2px 3px;
+}
+.conn-lost-dismiss:hover { opacity: 1; }
