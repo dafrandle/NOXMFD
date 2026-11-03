@@ -799,8 +799,9 @@
     const top = portals[0], bottom = split ? portals[1] : null;
     fillRocker('tl', pmSpec(top));
     fillRocker('tr', pagingSpec(top));
-    fillRocker('bl', split ? pmSpec(bottom) : displaySpec('contrast'));
-    fillRocker('br', split ? pagingSpec(bottom) : displaySpec('brightness'));
+    // Full view: brightness bottom-left, contrast bottom-right, where the F-16-style frames put them.
+    fillRocker('bl', split ? pmSpec(bottom) : displaySpec('brightness'));
+    fillRocker('br', split ? pagingSpec(bottom) : displaySpec('contrast'));
   }
 
   // ── SOI (as f35.js, a surface being one pane) ─────────────────────────────────────────
