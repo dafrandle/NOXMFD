@@ -55,11 +55,38 @@ assert.ok(r.placed.some((p) => p.osb === 'T3'));
 r = O.place([{ label: 'X', action: 'x', osb: 'B1' }], 'top', 0);
 assert.strictEqual(r.placed.length, 0);
 
+// The first seven keys of full view are the top pane's seven, so a page's first seven items sit on
+// the same keys either way.
+assert.deepStrictEqual(O.PANE_SLOTS.full.slice(0, 7), O.PANE_SLOTS.top);
+
 // MAIN's full list fits full view without paging; a stacked pane pages it.
-const MAIN_ITEMS = NAV.main.concat([{ label: 'CFG' }, { label: 'MD' }, { label: 'RDR' }, { label: 'SQD' }]);
+const MAIN_EXTRAS = [{ label: 'CFG', action: 'hud' }, { label: 'MD', action: 'akf' },
+                     { label: 'RDR', action: 'rdr' }, { label: 'SQD', action: 'sqd' }];
+const MAIN_ITEMS = NAV.main.concat(MAIN_EXTRAS);
 assert.ok(MAIN_ITEMS.length <= O.PANE_SLOTS.full.length);
 assert.strictEqual(O.place(MAIN_ITEMS, 'full', 0).pages, 1);
 assert.ok(O.place(MAIN_ITEMS, 'top', 0).pages > 1);
+
+// MAIN's priority names every destination, so none falls to the unranked tail.
+MAIN_ITEMS.forEach((i) => assert.ok(O.PRIORITY.main.indexOf(i.action) !== -1, 'MAIN priority misses ' + i.action));
+// MAIN: the flight pages take the first seven keys in either view; settings land on the bottom row.
+const FLIGHT = ['map', 'tgp', 'wpn', 'rdr', 'rwr', 'tgt', 'adi'];
+const ordered = O.order('main', MAIN_ITEMS);
+const fullMain = O.place(ordered, 'full', 0).placed;
+const keyOf = (placed, action) => (placed.find((p) => p.item.action === action) || {}).osb;
+FLIGHT.forEach((a) => assert.ok(O.PANE_SLOTS.top.indexOf(keyOf(fullMain, a)) !== -1, a + ' not in the first seven'));
+assert.ok(/^B/.test(keyOf(fullMain, 'hud')), 'CFG not on the bottom row');
+assert.deepStrictEqual(O.place(ordered, 'top', 0).placed.map((p) => p.item.action).sort(), FLIGHT.slice().sort());
+// Unranked items keep their order after the ranked ones.
+assert.deepStrictEqual(O.order('main', [{ action: 'x1' }, { action: 'hud' }, { action: 'x2' }, { action: 'map' }]).map((i) => i.action),
+                       ['map', 'hud', 'x1', 'x2']);
+// A page with no priority keeps its order.
+assert.deepStrictEqual(O.order('rdr', NAV.rdr).map((i) => i.action), NAV.rdr.map((i) => i.action));
+// MAP and TGP keep their settings last, in a split pane's flow and on full view's bottom-right key.
+assert.strictEqual(O.PRIORITY.map[O.PRIORITY.map.length - 1], 'mapcfg');
+assert.strictEqual(O.PRIORITY.tgp[O.PRIORITY.tgp.length - 1], 'tgpcfg');
+assert.strictEqual(O.FULL_PINS.map.mapcfg, 'B5');
+assert.strictEqual(O.FULL_PINS.tgp.tgpcfg, 'B5');
 
 // Every pinned page key is a key full view owns, used once per page, and names a real action
 // (NAV's, or the shell's own for TGP/WPN).

@@ -378,12 +378,12 @@
         items = (NAV.doc || []).slice();
         if (docView === 'image') items.push({ label: 'INDX', action: 'doc-indx' });
       } else if (page === 'main') {
-        items = (NAV.main || []).concat(MAIN_EXTRAS).sort(function (a, b) { return a.label.localeCompare(b.label); });
+        items = (NAV.main || []).concat(MAIN_EXTRAS);
       } else {
         items = (NAV[page] || []).slice();
       }
       const onRocker = O.rockerActions(page);
-      return items.filter(function (item) { return item && onRocker.indexOf(item.action) === -1; })
+      return O.order(page, items).filter(function (item) { return item && onRocker.indexOf(item.action) === -1; })
         .map(function (item) {
           const pin = O.pinFor(page, pane, item.action);
           return pin ? Object.assign({}, item, { osb: pin }) : item;
