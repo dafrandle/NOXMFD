@@ -80,12 +80,12 @@ assert.deepStrictEqual(O.place(ordered, 'top', 0).placed.map((p) => p.item.actio
 // Unranked items keep their order after the ranked ones.
 assert.deepStrictEqual(O.order('main', [{ action: 'x1' }, { action: 'hud' }, { action: 'x2' }, { action: 'map' }]).map((i) => i.action),
                        ['map', 'hud', 'x1', 'x2']);
-// MD group: MAIN, PAL, BDF, OBJ on the first four keys of every page in the switch, and every
+// MD group: MAIN, AKF, PAL, BDF, OBJ across the top row of every page in the switch, and every
 // destination of the switch ranked.
 ['akf', 'mis', 'obj', 'bdf', 'pal'].forEach(function (page) {
   const placed = O.place(O.order(page, NAV[page]), 'full', 0).placed;
-  assert.deepStrictEqual(['T1', 'T2', 'T3', 'T4'].map((k) => placed.find((p) => p.osb === k).item.action),
-                         ['main', 'pal', 'bdf', 'obj'], page);
+  assert.deepStrictEqual(O.TOP.map((k) => placed.find((p) => p.osb === k).item.action),
+                         ['main', 'akf', 'pal', 'bdf', 'obj'], page);
   NAV[page].forEach((i) => assert.ok(O.PRIORITY[page].indexOf(i.action) !== -1, page + ' misses ' + i.action));
 });
 // A page with no priority keeps its order.

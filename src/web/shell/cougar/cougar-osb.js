@@ -46,9 +46,9 @@
   //   main — the flight pages, then mission data, squads, extensions, and CFG last.
   //   map/tgp — controls before their CFG page. Full view pins these pages' keys instead (FULL_PINS),
   //             so this order is what a split pane flows.
-  //   md   — the MD group's shared switch (NAV.akf/mis/obj/bdf/pal): the force boards and objectives
-  //          first, the kill feed, mission info and documents after.
-  const MD = ['main', 'pal', 'bdf', 'obj', 'akf', 'mis', 'doc'];
+  //   md   — the MD group's shared switch (NAV.akf/mis/obj/bdf/pal): the kill feed (MD's landing
+  //          page), the force boards and objectives, then mission info and documents.
+  const MD = ['main', 'akf', 'pal', 'bdf', 'obj', 'mis', 'doc'];
   const PRIORITY = {
     main: ['map', 'tgp', 'wpn', 'rdr', 'rwr', 'tgt', 'adi', 'akf', 'sqd', 'ext', 'hud'],
     akf: MD, mis: MD, obj: MD, bdf: MD, pal: MD,
