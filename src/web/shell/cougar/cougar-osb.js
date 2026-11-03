@@ -62,7 +62,7 @@
   }
 
   // Which pane each corner rocker belongs to in a split. In full view the bottom pair is the
-  // display's own contrast/brightness instead.
+  // display's own brightness (bottom-left) and contrast (bottom-right) instead.
   const ROCKER_PANE = { tl: 'top', tr: 'top', bl: 'bottom', br: 'bottom' };
 
   // A page's natural +/-, which goes on its pane's left rocker instead of two face keys. `minus` and

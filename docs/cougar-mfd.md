@@ -91,8 +91,8 @@ seven keys per pane.
 |---|---|---|---|
 | Top-left | page +/- | — | page +/- |
 | Top-right | PREV / NEXT | — | PREV / NEXT |
-| Bottom-left | — | page +/- | contrast |
-| Bottom-right | — | PREV / NEXT | brightness |
+| Bottom-left | — | page +/- | brightness |
+| Bottom-right | — | PREV / NEXT | contrast |
 
 - **Page +/-** is whatever the page's natural +/- is: MAP zoom (Z+/Z-), RDR/HSD range (R+/R-), manual
   TGP zoom, and scroll on list pages (TGT, AKF, DOC, KEY, ...). The corner label shows it (`Z+/Z-`,
