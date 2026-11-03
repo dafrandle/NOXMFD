@@ -539,6 +539,12 @@
 
     frame.addEventListener('load', forwardToPage);
 
+    // WPN lays its rows out against rects measured from this pane, so they go stale whenever the pane
+    // changes size — a split preset, the side columns refitting, the window, a dev-tools viewport.
+    // Watching the pane itself covers every cause; a window 'resize' event misses all but one.
+    const resizeObs = new ResizeObserver(function () { api.resized(); });
+    resizeObs.observe(el);
+
     const api = {
       el: el,
       showPage: showPage,
@@ -573,6 +579,7 @@
       destroy: function () {
         if (currentPage === 'tgp') console.info('[NOXMFD TGP] Cougar pane destroyed while showing TGP.');
         if (pendingHoldClear) { pendingHoldClear(); pendingHoldClear = null; }
+        resizeObs.disconnect();
         clearOwnKeys();
         el.remove();
       },
