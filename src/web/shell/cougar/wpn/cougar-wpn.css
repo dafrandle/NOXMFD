@@ -1,0 +1,227 @@
+/* The COUGAR layout's WPN page (cougar-wpn.html). Sizes come from cougar-wpn.js as custom
+   properties on <body>, from cougar-wpn-layout.js:
+     --cm-h        countermeasures band height
+     --cols/--rows the weapon grid
+     --name-fs/--ammo-fs, --cm-fs/--cm-title-fs   font sizes
+     --img-w       the image column (0px = none)
+   and one of body.size-tall / size-mid / size-short. Colours are the shared theme's, as on WPN. */
+
+body {
+  --cm-h: 64px;
+  --cols: 1;
+  --rows: 5;
+  --name-fs: 22px;
+  --ammo-fs: 15px;
+  --cm-fs: 30px;
+  --cm-title-fs: 13px;
+  --img-w: 0px;
+  overflow: hidden;
+}
+
+.wpn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Countermeasures ───────────────────────────────────────────────────────────────────
+   Tall: two titled blocks, each a title over a big readout and its gauge. Mid/short: one line. */
+.cm {
+  flex: 0 0 var(--cm-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--no-green-dark);
+  min-width: 0;
+}
+.wpn:not(.has-loadout) .cm,
+.wpn:not(.has-loadout) .main { visibility: hidden; }
+.cm-sep { align-self: stretch; width: 1px; margin: 6px 0; background: var(--no-green-dark); }
+.cm-block {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+  min-width: 0;
+}
+.cm-title {
+  grid-column: 1 / -1;
+  font-size: var(--cm-title-fs);
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.cm-label { padding: 0 4px; }
+.cm-val {
+  font-size: var(--cm-fs);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: var(--no-green);
+  white-space: nowrap;
+}
+.cm-val .unit { font-size: 0.6em; margin-left: 3px; }
+.cm-dots {
+  width: calc(var(--cm-fs) * 0.95);
+  height: calc(var(--cm-fs) * 0.95);
+  color: var(--no-green);
+}
+.cm-dots .flare-dot.spent { stroke: var(--no-green-dark); }
+.cm-bar {
+  display: block;
+  width: calc(var(--cm-fs) * 2.4);
+  height: max(6px, calc(var(--cm-fs) * 0.28));
+  border: 1px solid var(--no-green);
+  border-radius: 2px;
+  background: rgba(var(--no-green-rgb), 0.08);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.cm-bar-fill { display: block; height: 100%; width: 0; background: var(--no-green); transition: width 120ms linear; }
+.cm-title.sel .cm-label { background: var(--no-green); color: var(--no-ink); }
+.cm-title.empty .cm-label, .cm-val.empty { color: var(--no-red); }
+.cm-title.empty.sel .cm-label { background: var(--no-red); color: var(--no-ink); }
+.cm-dots.empty { color: var(--no-red); }
+
+/* One line: title, readout and gauge side by side. */
+body:not(.size-tall) .cm-block { grid-template-columns: auto auto auto; grid-template-rows: auto; }
+body:not(.size-tall) .cm-title { grid-column: auto; }
+
+/* ── Weapons ─────────────────────────────────────────────────────────────────────────── */
+.main {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+}
+.list {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  grid-auto-flow: column;   /* short: fill the left column first, as the list reads */
+  padding: 6px 10px;
+  column-gap: 14px;
+  box-sizing: border-box;
+}
+
+/* A weapon: its name over its ammo line (tall, short), or both on one line (mid). The whole cell
+   is the select key. */
+.wp {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  color: var(--no-green);
+  cursor: pointer;
+}
+body.size-mid .wp { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+.wp-name {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 0 5px;
+  margin-left: -5px;
+  font-size: var(--name-fs);
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.size-mid .wp-name { align-self: center; flex: 0 1 auto; }
+.wp-ammo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--ammo-fs);
+  line-height: 1.15;
+  letter-spacing: 1px;
+  color: var(--no-green-dim);
+  white-space: nowrap;
+}
+body.size-mid .wp-ammo { flex: 0 0 auto; }
+.wp-count span { color: var(--no-green); font-weight: 900; }
+
+/* Ammo gauge: a pip per round for small magazines, a fill bar for big ones (as WPN). */
+.wp-bar:empty { display: none; }
+.wp-bar.pips { display: flex; gap: 2px; }
+.wp-bar.pips span {
+  width: max(4px, calc(var(--ammo-fs) * 0.45));
+  height: calc(var(--ammo-fs) * 0.8);
+  background: var(--no-green-dark);
+}
+.wp-bar.pips span.on { background: var(--no-green); }
+.wp-bar.fill {
+  width: calc(var(--ammo-fs) * 5);
+  height: max(5px, calc(var(--ammo-fs) * 0.45));
+  border: 1px solid var(--no-green-dark);
+  background: rgba(var(--no-green-rgb), 0.05);
+  box-sizing: border-box;
+}
+.wp-bar.fill span { display: block; height: 100%; background: var(--no-green); }
+
+.wp.sel .wp-name { background: var(--no-green); color: var(--no-ink); }
+.wp.soft .wp-name { outline: 1px solid var(--no-green); outline-offset: 1px; }
+.wp.empty .wp-name, .wp.empty .wp-ammo, .wp.empty .wp-count span { color: var(--no-red); }
+.wp.empty.sel .wp-name { background: var(--no-red); color: var(--no-ink); }
+.wp.empty.soft .wp-name { outline-color: var(--no-red); }
+.wp.empty .wp-bar.pips span { background: rgba(var(--no-red-rgb), 0.3); }
+.wp.empty .wp-bar.fill span { background: var(--no-red); }
+.wp:active .wp-name { opacity: 0.7; }
+@media (hover: hover) {
+  .wp:hover:not(.sel) .wp-name { outline: 1px dashed rgba(var(--no-green-rgb), 0.6); outline-offset: 1px; }
+}
+
+/* ── Selected weapon image ───────────────────────────────────────────────────────────── */
+.img {
+  flex: 0 0 var(--img-w);
+  min-width: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  container-type: size;
+  padding: 8px;
+  box-sizing: border-box;
+}
+.img.show { display: flex; }
+.img img { display: block; width: 100cqw; height: 100cqh; object-fit: contain; }
+/* The 2:1 source turned upright: the box's axes swap under the rotation. */
+body.img-rot .img img { width: 100cqh; height: 100cqw; transform: rotate(90deg); }
+
+/* ── Empty and SAFE ──────────────────────────────────────────────────────────────────── */
+.wpn.has-loadout .wpn-empty { display: none; }
+.wpn-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+.safe { display: none; position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.safe.show { display: block; }
+.safe-x { position: absolute; inset: 0; width: 100%; height: 100%; }
+.safe-x line { stroke: var(--no-red); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.safe-box {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  min-width: 40%;
+  border: 1px solid var(--no-red);
+  background: var(--no-bg);
+  box-shadow: 0 0 12px rgba(var(--no-red-rgb), 0.35);
+  overflow: hidden;
+}
+.safe-stripe { height: clamp(5px, 2vh, 9px); background: repeating-linear-gradient(135deg, var(--no-red) 0 10px, var(--no-bg) 10px 20px); }
+.safe-body { padding: clamp(6px, 4vh, 22px) clamp(14px, 6vw, 40px); color: var(--no-red); text-align: center; letter-spacing: 2px; }
+.safe-title { font-size: clamp(11px, 4vh, 17px); font-weight: 700; margin-bottom: clamp(2px, 1.5vh, 10px); }
+.safe-state { font-size: clamp(18px, 8vh, 36px); font-weight: 900; letter-spacing: 3px; }
