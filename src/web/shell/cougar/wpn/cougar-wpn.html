@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — WPN (COUGAR)</title>
+<!--
+  The COUGAR layout's WPN page, served at /assets/shell/cougar/wpn/cougar-wpn.html. A fork of
+  pages/wpn for a pane that is about as wide as a Cougar frame's window and anywhere from that tall
+  down to a third of it: it lays itself out from its own box (cougar-wpn-layout.js) instead of from
+  bezel geometry. pages/wpn is unchanged and still serves CLASSIC and F-35.
+
+  Shell -> page messages (all {mfd:true, ...}), the same 'wpn' and 'cm' the other layouts send:
+    'wpn' : the shell's page of weapons (<= 5), selWeapon, softGun/softRel, masterArmsOn,
+            hasLoadout (optional; items.length decides without it).
+    'cm'  : countermeasures snapshot (flares + jammer).
+  'wpn-layout' and 'orient' are ignored: this page measures itself.
+
+  A weapon row is its own select key: tapping it sends weapon.select, the same command the other
+  layouts' line-select keys send. Paging is the shell's (its right rocker).
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/shell/cougar/wpn/cougar-wpn.css">
+</head>
+<body class="size-tall">
+  <div class="wpn" id="wpn">
+    <div class="cm" id="cm">
+      <div class="cm-block cm-flares">
+        <span class="cm-title" id="cm-flares-title"><span class="cm-label">IR FLARES</span></span>
+        <span class="cm-val" id="cm-flares-val">&mdash;</span>
+        <svg class="cm-dots" id="cm-dots" viewBox="0 0 100 100" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="7">
+            <circle class="flare-dot" cx="12.5" cy="12.5" r="8"/><circle class="flare-dot" cx="37.5" cy="12.5" r="8"/><circle class="flare-dot" cx="62.5" cy="12.5" r="8"/><circle class="flare-dot" cx="87.5" cy="12.5" r="8"/>
+            <circle class="flare-dot" cx="12.5" cy="37.5" r="8"/><circle class="flare-dot" cx="37.5" cy="37.5" r="8"/><circle class="flare-dot" cx="62.5" cy="37.5" r="8"/><circle class="flare-dot" cx="87.5" cy="37.5" r="8"/>
+            <circle class="flare-dot" cx="12.5" cy="62.5" r="8"/><circle class="flare-dot" cx="37.5" cy="62.5" r="8"/><circle class="flare-dot" cx="62.5" cy="62.5" r="8"/><circle class="flare-dot" cx="87.5" cy="62.5" r="8"/>
+            <circle class="flare-dot" cx="12.5" cy="87.5" r="8"/><circle class="flare-dot" cx="37.5" cy="87.5" r="8"/><circle class="flare-dot" cx="62.5" cy="87.5" r="8"/><circle class="flare-dot" cx="87.5" cy="87.5" r="8"/>
+          </g>
+        </svg>
+      </div>
+      <div class="cm-sep"></div>
+      <div class="cm-block cm-jammer">
+        <span class="cm-title" id="cm-jammer-title"><span class="cm-label">EW JAMMER</span></span>
+        <span class="cm-val" id="cm-jammer-val">&mdash;</span>
+        <span class="cm-bar"><span class="cm-bar-fill" id="cm-bar-fill"></span></span>
+      </div>
+    </div>
+    <div class="main">
+      <div class="list" id="list"></div>
+      <div class="img" id="img"><img id="img-el" alt=""></div>
+    </div>
+    <div class="wpn-empty mfd-empty" id="wpn-empty"><span class="mfd-empty-title">WPN</span>&mdash; NO LOADOUT &mdash;</div>
+  </div>
+
+  <!-- Master Arm OFF (docs/radar-master-arms.md): the whole pane crossed out, with a card. -->
+  <div class="safe" id="safe">
+    <svg class="safe-x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="1" y1="1" x2="99" y2="99"/><line x1="99" y1="1" x2="1" y2="99"/>
+    </svg>
+    <div class="safe-box">
+      <div class="safe-stripe"></div>
+      <div class="safe-body"><div class="safe-title">MASTER ARM</div><div class="safe-state">SAFE</div></div>
+      <div class="safe-stripe"></div>
+    </div>
+  </div>
+
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/shell/cougar/wpn/cougar-wpn-layout.js"></script>
+<script src="/assets/shell/cougar/wpn/cougar-wpn.js"></script>
+</body>
+</html>

@@ -12,8 +12,12 @@ in game:
 - Profiles are kept in the browser (`localStorage`, `cougar-profile:<NAME>`), not on the game PC:
   enough while the OSB bindings don't exist yet. Moving them to the plugin comes with Stage 5.
 - SP1-SP3 are top-wide, 50/50, bottom-wide, as proposed.
-- WPN shows its rows in a pane with tap-to-select; selecting a weapon from a frame button is
-  Stage 4.
+- WPN is this layout's own fork, `shell/cougar/wpn/cougar-wpn.html` (`pages/wpn` is unchanged).
+  It lays itself out from its pane (`cougar-wpn-layout.js`, pinned by its test) instead of from
+  bezel geometry: two-line rows with the image from 280px of pane height, one-line rows with a
+  narrower image from 220px, two columns of three with no image below that, down to the 170px
+  small pane of a wide split. A row is its own select key (weapon.select). Selecting a weapon
+  from a frame button is Stage 4.
 - The LYT page's saved-layout thumbnails draw both wide splits as its plain top/bottom split.
 
 ## Goal

@@ -74,7 +74,8 @@
   // ── Pages and feeds (as f35.js) ───────────────────────────────────────────────────────
   // The F-35's page table, with LYT told which shell hosts it. MAIN maps to no page (`null`): its
   // destinations are the OSB labels themselves.
-  const PAGES = Object.assign({}, LayoutPages.F35, { lyt: '/lyt?cougar' });
+  // WPN is this layout's own page (wpn/cougar-wpn.html), sized for a Cougar pane.
+  const PAGES = Object.assign({}, LayoutPages.F35, { lyt: '/lyt?cougar', wpn: '/assets/shell/cougar/wpn/cougar-wpn.html' });
 
   const PAGE_FEEDS = {
     avn: ['avn'],
@@ -134,7 +135,6 @@
   const FULL_BLEED = { map: true, tgp: true, rwr: true, rdr: true, hsd: true };
 
   const WPN_MAX_DISPLAY = 5;
-  const WPN_ICON_INSET  = 20;
 
   function has(page) { return Object.prototype.hasOwnProperty.call(PAGES, page) || ExtNav.isExtensionPage(page); }
   function feedsFor(page) { return PAGE_FEEDS[page] || (ExtNav.isExtensionPage(page) ? ['ext_' + page] : []); }
@@ -225,7 +225,6 @@
     let gridOn      = false;
     let slewOn      = false;
     let docView     = 'index';
-    let wpnHits     = [];
 
     // See f35.js pendingNavHoldClear: a hold in progress when the labels are rebuilt must be stopped,
     // or its timer outlives the button it belongs to.
@@ -273,16 +272,15 @@
     }
     function forwardToPage() {
       feedsFor(currentPage).forEach(forwardSlice);
-      if (currentPage === 'wpn') { forwardWpnLayout(); forwardOrientation(); }
       // A fresh document has a fresh listener; resend cursor focus if this pane holds it (f35.js).
       if (PAD_CURSOR_PAGES[currentPage] && focusedCursorWindow() === frameWin())
         frameWin().postMessage({ mfd: true, action: 'cursor-focus', on: true }, '*');
     }
 
     // ── WPN ────────────────────────────────────────────────────────────────────────────
-    // The page draws five weapon rows under a countermeasures band, laid out against rects this
-    // layout forwards. Here the bands are the pane's height in six (CM + five rows); the rows are
-    // selectable by tapping them. Selecting a weapon from a frame button is Stage 4 of the plan.
+    // This layout's own WPN page (wpn/cougar-wpn.html) lays itself out from its pane and selects a
+    // weapon when its row is tapped, so the shell only hands it a page of weapons. Selecting a weapon
+    // from a frame button is Stage 4 of the plan.
     function wpnList()  { return (slices.loadout && slices.loadout.items) || []; }
     function wpnState() { return F35WpnPaging.wpnPaging(wpnList(), wpnPage, WPN_MAX_DISPLAY); }
     function forwardWpn() {
@@ -297,49 +295,11 @@
       wpnPage = st.page;
       w.postMessage({ mfd: true, type: 'wpn', items: st.visible, selWeapon: lo.selWeapon,
                       softGun: lo.softGun || null, softRel: lo.softRel || null,
-                      masterArmsOn: lo.masterArmsOn !== false,
+                      masterArmsOn: lo.masterArmsOn !== false, hasLoadout: wpnList().length > 0,
                       page: st.maxPage > 0 ? st.page + 1 : 1, pages: st.maxPage + 1 }, '*');
       const key = st.page + '|' + st.maxPage + '|' + st.visible.map(function (it) { return it.n; }).join(',');
       if (currentPage === 'wpn' && key !== wpnNavKey) { wpnNavKey = key; renderNav(); }
       if (currentPage === 'wpn') { markMasterArms(); markCombatMode(); }
-    }
-    function wpnRowHeight() { return frame.getBoundingClientRect().height / (WPN_MAX_DISPLAY + 1); }
-    function forwardWpnLayout() {
-      const w = frameWin();
-      if (!w || currentPage !== 'wpn') return;
-      const rowH = wpnRowHeight();
-      if (!(rowH > 0)) return;
-      const slots = [];
-      for (let k = 0; k < WPN_MAX_DISPLAY; k++) slots.push({ top: (k + 1) * rowH, height: rowH });
-      w.postMessage({ mfd: true, type: 'wpn-layout', layout: 'full', slots: slots,
-                      cmTop: 0, cmHeight: rowH,
-                      iconTop: rowH + WPN_ICON_INSET,
-                      iconHeight: WPN_MAX_DISPLAY * rowH - 2 * WPN_ICON_INSET }, '*');
-      placeWeaponHits();
-    }
-    function forwardOrientation() {
-      const w = frameWin();
-      if (!w) return;
-      const r = el.getBoundingClientRect();
-      w.postMessage({ mfd: true, type: 'orient', orientation: r.width < r.height ? 'portrait' : 'landscape' }, '*');
-    }
-    function clearWeaponHits() { wpnHits.forEach(function (b) { b.remove(); }); wpnHits = []; }
-    function placeWeaponHits() {
-      clearWeaponHits();
-      if (currentPage !== 'wpn') return;
-      const rowH = wpnRowHeight();
-      wpnState().visible.forEach(function (it, k) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'wpn-hit';
-        b.style.cssText = 'position:absolute;left:0;right:0;top:' + ((k + 1) * rowH) + 'px;height:' + rowH +
-                          'px;z-index:1;background:none;border:0;padding:0;cursor:pointer;';
-        b.title = it.n;
-        b.setAttribute('aria-label', 'Select ' + it.n);
-        b.addEventListener('click', function () { sendCommand('weapon.select', { wname: it.n }).catch(function () {}); });
-        el.appendChild(b);
-        wpnHits.push(b);
-      });
     }
 
     // ── Labels ─────────────────────────────────────────────────────────────────────────
@@ -484,8 +444,7 @@
       setFollow(followOn);
       setGrid(gridOn);
       setSlew(slewOn);
-      if (currentPage === 'wpn') { markMasterArms(); markCombatMode(); placeWeaponHits(); }
-      else clearWeaponHits();
+      if (currentPage === 'wpn') { markMasterArms(); markCombatMode(); }
       if (currentPage === 'tgp') markTgp();
       if (onNavRendered) onNavRendered(api);
     }
@@ -539,12 +498,6 @@
 
     frame.addEventListener('load', forwardToPage);
 
-    // WPN lays its rows out against rects measured from this pane, so they go stale whenever the pane
-    // changes size — a split preset, the side columns refitting, the window, a dev-tools viewport.
-    // Watching the pane itself covers every cause; a window 'resize' event misses all but one.
-    const resizeObs = new ResizeObserver(function () { api.resized(); });
-    resizeObs.observe(el);
-
     const api = {
       el: el,
       showPage: showPage,
@@ -573,13 +526,9 @@
       refreshNav: renderNav,
       rockerPM: rockerPM,
       rockerPaging: rockerPaging,
-      resized: function () {
-        if (currentPage === 'wpn') { forwardOrientation(); forwardWpnLayout(); }
-      },
       destroy: function () {
         if (currentPage === 'tgp') console.info('[NOXMFD TGP] Cougar pane destroyed while showing TGP.');
         if (pendingHoldClear) { pendingHoldClear(); pendingHoldClear = null; }
-        resizeObs.disconnect();
         clearOwnKeys();
         el.remove();
       },
@@ -641,7 +590,7 @@
     syncFullBleed();
     renderShellKeys();
     renderRockers();
-    if (fitSide()) relayoutAll();
+    fitSide();
     reportPanes();
     renderSoiRing();
     renderSoiCursor();
@@ -864,7 +813,7 @@
   function onNavRendered(p) {
     syncFullBleed();
     renderRockers();
-    if (fitSide()) relayoutAll();
+    fitSide();
     renderPin();
     saveProfileSoon();
     if (p !== focusedPortal()) return;
@@ -1013,10 +962,9 @@
   });
   mapTap.contentWindow.postMessage({ mfd: true, action: 'sysdmg-request' }, '*');
 
-  function relayoutAll() { portals.forEach(function (p) { p.resized(); }); }
-  document.fonts.ready.then(function () { fitSide(); relayoutAll(); });
+  document.fonts.ready.then(fitSide);
   // Label sizes follow the window height, so the side columns refit too.
-  window.addEventListener('resize', function () { fitSide(); relayoutAll(); });
+  window.addEventListener('resize', fitSide);
 
   // MAP's route keys follow the navigation library (f35.js).
   window.addEventListener('wptroutes:changed', function () {
