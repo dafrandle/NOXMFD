@@ -710,39 +710,71 @@
     saveProfileSoon();
   }
 
-  // half: { label, run, repeat? } or null for an inert half. A repeating half (TGP zoom) steps once
-  // on press and then repeats while held, as the F-35's on-screen Z+/Z- do.
-  function rockerHalf(half) {
+  // Each rocker's caption and two halves are built once and updated in place. renderRockers runs on
+  // every loadout tick (WPN's page count), several times a second: rebuilding the buttons there would
+  // drop any press whose pointerdown and pointerup land on different elements, and strand a held
+  // repeat whose button vanished before its pointerup.
+  //
+  // A half's action is read from the corner's current spec at press time, so an update between press
+  // and release can't run a stale action. half: { label, run, repeat? }; a missing run is inert. A
+  // repeating half (TGP zoom) steps once on press and then repeats while held, as the F-35's on-screen
+  // Z+/Z- do.
+  const rockers = {};
+  function stopRepeat(r) { if (r.timer) { clearTimeout(r.timer); r.timer = null; } }
+  function makeRockerHalf(r, which) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'rocker-half';
-    if (!half || !half.run) { b.disabled = true; b.textContent = half ? half.label : ''; return b; }
-    b.textContent = half.label;
-    if (half.repeat) {
-      let t = null;
-      const stop = function () { clearTimeout(t); t = null; };
-      b.addEventListener('pointerdown', function () {
-        half.run();
-        t = setTimeout(function rep() { half.run(); t = setTimeout(rep, TGP_ZOOM_STEP_REPEAT_MS); }, TGP_ZOOM_STEP_INITIAL_DELAY_MS);
-      });
-      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, stop); });
-      b.addEventListener('click', function (e) { if (e.detail === 0) half.run(); });
-    } else {
-      b.addEventListener('click', half.run);
-    }
+    const half = function () { return r.spec && r.spec[which]; };
+    b.addEventListener('pointerdown', function () {
+      const h = half();
+      if (!h || !h.run || !h.repeat) return;
+      stopRepeat(r);
+      h.run();
+      r.timer = setTimeout(function rep() {
+        const cur = half();
+        if (!cur || !cur.run || !cur.repeat) { r.timer = null; return; }
+        cur.run();
+        r.timer = setTimeout(rep, TGP_ZOOM_STEP_REPEAT_MS);
+      }, TGP_ZOOM_STEP_INITIAL_DELAY_MS);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { stopRepeat(r); }); });
+    b.addEventListener('click', function (e) {
+      const h = half();
+      if (!h || !h.run) return;
+      // A repeating half already stepped on pointerdown; only a click with no pointer behind it
+      // (SOI select, keyboard) steps here.
+      if (h.repeat && e.detail !== 0) return;
+      h.run();
+    });
     return b;
   }
-  function fillRocker(corner, spec) {
+  Object.keys(rockerEls).forEach(function (corner) {
     const el = rockerEls[corner];
-    el.textContent = '';
-    if (!spec) return;
-    const cap = document.createElement('div');
-    cap.className = 'rocker-caption';
-    cap.textContent = spec.caption;
-    const row = document.createElement('div');
-    row.className = 'rocker-halves';
-    row.append(rockerHalf(spec.minus), rockerHalf(spec.plus));
-    el.append(cap, row);
+    const r = { spec: null, timer: null, cap: document.createElement('div'), row: document.createElement('div') };
+    r.cap.className = 'rocker-caption';
+    r.row.className = 'rocker-halves';
+    r.minus = makeRockerHalf(r, 'minus');
+    r.plus = makeRockerHalf(r, 'plus');
+    r.row.append(r.minus, r.plus);
+    el.append(r.cap, r.row);
+    rockers[corner] = r;
+  });
+  function setHalf(b, h) {
+    const label = h ? h.label : '';
+    if (b.textContent !== label) b.textContent = label;
+    b.disabled = !h || !h.run;
+  }
+  function fillRocker(corner, spec) {
+    const r = rockers[corner];
+    // A held repeat stops when its rocker changes meaning (the pane left TGP).
+    if (!spec || !r.spec || spec.caption !== r.spec.caption) stopRepeat(r);
+    r.spec = spec;
+    rockerEls[corner].classList.toggle('blank', !spec);
+    const cap = spec ? spec.caption : '';
+    if (r.cap.textContent !== cap) r.cap.textContent = cap;
+    setHalf(r.minus, spec && spec.minus);
+    setHalf(r.plus, spec && spec.plus);
   }
   function pmSpec(p) { return p ? p.rockerPM() : null; }
   function pagingSpec(p) {

@@ -21,7 +21,7 @@ html, body {
    Brightness and contrast (the full-view bottom rockers) are a filter on the whole glass, pages
    included: the browser cannot drive the monitor itself. */
 .glass {
-  --band: clamp(30px, 6.5vh, 46px);
+  --band: clamp(36px, 6.5vh, 46px);   /* floor fits a rocker: caption over its 22px halves */
   --side: 64px;
   --brightness: 1;
   --contrast: 1;
@@ -204,17 +204,22 @@ html, body {
 .rocker.bl { grid-row: 7; grid-column: 1; }
 .rocker.br { grid-row: 7; grid-column: 7; }
 
+/* A rocker with nothing to do on this page shows nothing, but keeps its buttons in place. */
+.rocker.blank { visibility: hidden; }
 .rocker-caption {
   font-size: 9px;
   letter-spacing: 1px;
   line-height: 1;
   color: var(--no-label);
   opacity: 0.7;
+  white-space: nowrap;
 }
-.rocker-halves { display: flex; gap: 2px; }
+.rocker-halves { display: flex; gap: 3px; }
 .rocker-half {
-  min-width: 22px;
-  padding: 1px 3px;
+  min-width: 26px;
+  min-height: 22px;
+  padding: 1px 4px;
+  touch-action: manipulation;
   border: 1px solid rgba(var(--no-label-rgb), 0.35);
   border-radius: 2px;
   background: none;
