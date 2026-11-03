@@ -7,6 +7,7 @@ which supplies the synthetic/captured /stream data that the shell forwards to pa
 
   /                  -> src/web/shell/classic/mfd.html
   /f35               -> src/web/shell/f35/f35.html      (the F-35 layout — see docs/layouts.md)
+  /cougar            -> src/web/shell/cougar/cougar.html (the COUGAR layout — see docs/cougar-mfd.md)
   /thrl-demo         -> tools/thrl-demo.html    (standalone THRL slider demo, no shell/mock needed)
   /config            -> preview runtime URLs        (localhost/LAN URL for this harness port)
   /map-view[?bare]   -> src/web/pages/map/map.html      (the base map iframe; mock injected here)
@@ -1538,6 +1539,8 @@ class H(http.server.SimpleHTTPRequestHandler):
             return self._send(_shell_page(WEB / 'shell' / 'classic' / 'mfd.html'), 'text/html; charset=utf-8')
         if path == '/f35':
             return self._send(_shell_page(WEB / 'shell' / 'f35' / 'f35.html'), 'text/html; charset=utf-8')
+        if path == '/cougar':
+            return self._send(_shell_page(WEB / 'shell' / 'cougar' / 'cougar.html'), 'text/html; charset=utf-8')
         if path == '/__reload-token':
             return self._send(str(_reload_token()).encode('utf-8'), 'text/plain; charset=utf-8')
         if path == '/__preview-push':

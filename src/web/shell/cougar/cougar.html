@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  COUGAR layout (docs/cougar-mfd.md), served at /cougar. For a browser window sized to sit behind a
+  physical F-16-style OSB frame (Thrustmaster Cougar MFD, WinWing): no bezel is drawn, every label sits
+  on the glass beside the frame button that presses it.
+
+  The window is a 7x7 grid: a ring of OSB cells (T1-T5, B1-B5, L1-L5, R1-R5) and four corner rockers
+  around the page area. cougar.js builds the cells and the page frames; this file only declares the
+  fixed parts.
+
+  A window knows which MFD it is from its URL (?mfd=LEFT): the profile holding its pages, pin and
+  display settings. With no ?mfd the profile picker below is shown instead.
+
+  This document does not take part in the CLASSIC/F-35 sticky-layout redirect (the `layout` key their
+  head guards read): a Cougar window is reached by its own URL.
+-->
+<title>NO XMFD — COUGAR</title>
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/shell/cougar/cougar.css">
+<link rel="stylesheet" href="/assets/shell/shared/layout-modal.css">
+</head>
+<body>
+
+<div class="glass" id="glass">
+  <!-- Telemetry tap: owns the only EventSource('/stream') and posts the per-page slices up here, as
+       on the F-35 (f35.html #map-tap). Never displayed. -->
+  <iframe id="map-tap" src="/map-view?telemetry=1" title="telemetry"></iframe>
+
+  <!-- The page area: one page frame in full view, two stacked in a split. Built by cougar.js. -->
+  <div class="panes" id="panes"></div>
+
+  <!-- Corner rockers. Each is two halves; cougar.js fills the caption and labels per page. -->
+  <div class="rocker tl" data-rocker="tl"></div>
+  <div class="rocker tr" data-rocker="tr"></div>
+  <div class="rocker bl" data-rocker="bl"></div>
+  <div class="rocker br" data-rocker="br"></div>
+
+  <!-- Connection-lost banner (issue #79), same controller as the other shells. -->
+  <div class="conn-lost-banner" id="conn-lost-banner" hidden>
+    <span class="conn-lost-dot"></span>
+    <span class="conn-lost-msg">CONNECTION LOST — retrying…</span>
+    <button type="button" class="conn-lost-dismiss" id="conn-lost-dismiss" aria-label="Dismiss">&#10005;</button>
+  </div>
+</div>
+
+<!-- Profile picker: shown when the URL names no profile. Picking or creating one reloads this window
+     as /cougar?mfd=<NAME>, so a bookmark or a restored session brings the same MFD back. -->
+<div class="picker" id="picker" hidden>
+  <div class="picker-panel">
+    <h1 class="picker-title">COUGAR MFD</h1>
+    <p class="picker-tip">Which MFD is this window? Each profile keeps its own pages, pin and display settings.</p>
+    <ul class="picker-list" id="picker-list"></ul>
+    <form class="picker-new" id="picker-new">
+      <input type="text" id="picker-name" maxlength="24" placeholder="NEW PROFILE NAME" autocomplete="off" spellcheck="false">
+      <button type="submit" class="picker-btn">CREATE</button>
+    </form>
+    <div class="picker-shells">
+      <a href="/" class="picker-link" data-layout="classic">CLASSIC</a>
+      <a href="/f35" class="picker-link" data-layout="f35">F-35</a>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/shell/shared/nav-model.js"></script>
+<script src="/assets/shell/shared/layout-pages.js"></script>
+<script src="/assets/shell/shared/ext-nav.js"></script>
+<script src="/assets/shell/shared/td-nav.js"></script>
+<script src="/assets/shell/shared/tgp-marks.js"></script>
+<!-- MAP's full-view action order and route filter, shared by the other layouts (unmodified). -->
+<script src="/assets/shell/classic/split-slots.js"></script>
+<script src="/assets/shell/f35/f35-wpn-paging.js"></script>
+<script src="/assets/pages/wpt/wpt-route.js"></script>
+<script src="/assets/pages/wpt/waypoints-store.js"></script>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/shell/shared/layout-store.js"></script>
+<script src="/assets/shell/shared/layout-modal.js"></script>
+<script src="/assets/shell/shared/layout-keybinds.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/shell/shared/layout-keydown.js"></script>
+<script src="/assets/shell/shared/layout-pin.js"></script>
+<script src="/assets/shell/shared/conn-lost-banner.js"></script>
+<script src="/assets/shell/shared/theme-live.js"></script>
+<script src="/assets/shell/cougar/cougar-osb.js"></script>
+<script src="/assets/shell/cougar/cougar.js"></script>
+</body>
+</html>

@@ -140,6 +140,8 @@ namespace NOXMFD
                 TelemetryServer.Redirect(ctx, "/");
             else if (path == "/f35")
                 TelemetryAssets.ServeAssetRel(ctx, "shell/f35/f35.html");
+            else if (path == "/cougar")
+                TelemetryAssets.ServeAssetRel(ctx, "shell/cougar/cougar.html");
             else if (path == "/" || path == "/index.html")
                 TelemetryAssets.ServeAssetRel(ctx, "shell/classic/mfd.html");
             else

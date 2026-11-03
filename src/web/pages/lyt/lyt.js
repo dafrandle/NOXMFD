@@ -2,16 +2,22 @@
 // /layout-options and asks the shell for the two things only it can do: switch shell, apply a layout.
 
 const rowsEl = document.getElementById('lyt-rows');
-// The shell hosting this page: CLASSIC serves it as /lyt, F-35 as /lyt?f35. Its card is the current
-// one, and SAVED lists its layouts.
-const shell = new URLSearchParams(location.search).has('f35') ? 'f35' : 'classic';
+// The shell hosting this page: CLASSIC serves it as /lyt, F-35 as /lyt?f35, COUGAR as /lyt?cougar.
+// Its card is the current one, and SAVED lists its layouts.
+const shellParams = new URLSearchParams(location.search);
+const shell = shellParams.has('cougar') ? 'cougar' : shellParams.has('f35') ? 'f35' : 'classic';
 document.body.dataset.shell = shell;   // lyt.css shapes the row thumbnails by it
 
 function toShell(msg) { window.parent.postMessage(Object.assign({ mfd: true, type: 'lyt-act' }, msg), '*'); }
 
 document.querySelectorAll('.lyt-shell').forEach((card) => {
   card.setAttribute('aria-pressed', String(card.dataset.shell === shell));
-  card.addEventListener('click', () => toShell({ act: card.dataset.shell }));
+  card.addEventListener('click', () => {
+    // CLASSIC and F-35 don't know the COUGAR layout, so this page goes there itself. COUGAR asks which
+    // MFD the window is (docs/cougar-mfd.md).
+    if (card.dataset.shell === 'cougar' && shell !== 'cougar') { window.top.location.href = '/cougar'; return; }
+    toShell({ act: card.dataset.shell });
+  });
 });
 
 // The SAVE / LOAD key boxes stand in for their placeholders.

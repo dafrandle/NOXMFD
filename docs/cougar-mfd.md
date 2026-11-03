@@ -2,7 +2,19 @@
 
 ## Status
 
-Planning. Branch `feature/cougar-mfd`. Nothing implemented yet.
+Branch `feature/cougar-mfd`. Stages 1-3 are in, checked in the `serve_web.py` harness only, not yet
+in game:
+
+- `/cougar` (`src/web/shell/cougar/`): the rotated OSB ring, shell keys, rocker corners, full view
+  and the three stacked splits, PIN/SWAP, SAVE/LOAD layouts (`shell: 'cougar'`), SOI, the profile
+  picker, and the LYT card. `cougar-osb.js` holds the key map as data and `cougar-osb.test.js`
+  pins it.
+- Profiles are kept in the browser (`localStorage`, `cougar-profile:<NAME>`), not on the game PC:
+  enough while the OSB bindings don't exist yet. Moving them to the plugin comes with Stage 5.
+- SP1-SP3 are top-wide, 50/50, bottom-wide, as proposed.
+- WPN shows its rows in a pane with tap-to-select; selecting a weapon from a frame button is
+  Stage 4.
+- The LYT page's saved-layout thumbnails draw both wide splits as its plain top/bottom split.
 
 ## Goal
 
@@ -138,10 +150,13 @@ the duplication is the price of keeping the change additive.
 
 ## Open questions
 
-- Order of SP1-SP3. Proposed: top-wide, 50/50, bottom-wide (matches where the larger pane sits).
-- Where profiles live: on the game PC like saved layouts (shared by every browser), or per browser.
-  Game PC is the working assumption, since bindings live in the plugin.
-- Which page keys go where per page (the rotated key map). Drafted in Stage 2, reviewed in-browser.
+- Where profiles live long term: on the game PC like saved layouts (shared by every browser), or per
+  browser. Game PC is the working assumption, since bindings live in the plugin.
+- Which page keys go where per page (the rotated key map, `CougarOsb.FULL_PINS` and the flow order).
+  Drafted; needs review on real hardware. Known rough spot: a split MAP pane puts R+ on L1 and R- on
+  R1, either side of the pane.
+- Rocker orientation: each rocker is drawn as a left/right pair (minus, plus). Which physical half
+  is which is up to the binding wizard.
 
 ## Live-game verification
 
