@@ -30,6 +30,9 @@ html, body {
   display: grid;
   grid-template-columns: var(--side) repeat(5, minmax(0, 1fr)) var(--side);
   grid-template-rows: var(--band) repeat(5, minmax(0, 1fr)) var(--band);
+  /* Its own background, so the ring's black is inside the filter: without it the label frame shows
+     the unfiltered body through, and contrast lifts the page but not the frame around it. */
+  background: var(--no-bg);
   filter: brightness(var(--brightness)) contrast(var(--contrast));
 }
 
