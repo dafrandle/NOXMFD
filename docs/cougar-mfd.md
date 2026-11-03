@@ -11,7 +11,16 @@ OSB frame: the Thrustmaster Cougar MFD (the reference hardware) or a WinWing MFD
 sized by the player to fit the frame's window, every on-screen label sits beside the physical button
 that presses it, and the frame's buttons drive the display 1:1 instead of through SOI Nav Up/Down/Select.
 
-CLASSIC and F-35 are unchanged by this work, apart from the shared-code extraction in Stage 1.
+**CLASSIC and F-35 are not modified.** Every change is additive, so the work stays mergeable
+upstream: new files under `src/web/shell/cougar/`, plus three small additions to shared plumbing:
+
+- `TelemetryHttpRouter.cs`: a `/cougar` route (new web files are embedded by the existing glob).
+- `tools/serve_web.py`: the same route in the dev harness.
+- `pages/lyt/`: a COUGAR card. It navigates the top window to `/cougar` itself, so neither existing
+  shell has to learn a new LYT action. Hosted by Cougar as `/lyt?cougar`.
+
+The Cougar shell does not write the shared `layout` sticky key the other two shells' head guards
+read; a Cougar window is reached by its own URL (see Profiles).
 
 ## Hardware
 
@@ -109,14 +118,18 @@ Target, ...) belong on the stick or throttle.
 
 ## Implementation plan
 
-1. **Shared relay.** Both shells forward live data to their page iframes, each its own way: `mfd.js`
-   through ~61 hand-written `forward*` functions plus `RELAY_MESSAGES`, `f35.js` through the
-   `PAGE_FEEDS` table and `forwardSlice`. Extract one table-driven relay (from the F-35's model) into
-   `shell/shared/`, move both shells onto it with no behaviour change. Candidate for upstream on
-   its own.
-2. **`/cougar` full view.** New shell page, the rotated key map as data (one table, not per-page
-   branches), shell keys, rocker corners, profiles, sticky-layout redirects in all three shells' head
-   guards, LYT card.
+The shell is built on the F-35's **portal** model, not CLASSIC's bezel. An F-35 portal
+(`f35.js makePortal`) is one self-contained MFD screen: labels drawn on the glass in a cell grid
+around the page window, page feeds through the `PAGE_FEEDS` table, WPN rows derived from that grid
+instead of physical keys, TGP marks, PAD cursor, SOI. A Cougar screen is one portal in full view and
+two stacked portals in a split, with a different label grid. Since `f35.js` is not modified, the
+Cougar shell carries its own adapted copy of the portal code rather than an extracted shared one;
+the duplication is the price of keeping the change additive.
+
+1. **Cougar portal.** `shell/cougar/` with its own portal, adapted from `makePortal`: the rotated
+   OSB label grid as data (one table, not per-page branches), page feeds, WPN rows on the grid.
+2. **`/cougar` full view.** The shell page around one portal: shell keys, rocker corners, profiles,
+   route, LYT card.
 3. **Stacked splits and paging.** H_SPLIT plus top-wide/bottom-wide; per-pane 7-key placement;
    rocker paging.
 4. **WPN, SYS, AFM.** These lay their content out against the side keys (WPN's weapon rows beside
@@ -126,9 +139,6 @@ Target, ...) belong on the stick or throttle.
 ## Open questions
 
 - Order of SP1-SP3. Proposed: top-wide, 50/50, bottom-wide (matches where the larger pane sits).
-- Base for the `/cougar` shell: CLASSIC's bezel model or the F-35's portal model. The F-35 already
-  draws labels on the glass and fits label columns to their contents (`--osb-w`), which is closer
-  to this layout; CLASSIC already has stacked splits.
 - Where profiles live: on the game PC like saved layouts (shared by every browser), or per browser.
   Game PC is the working assumption, since bindings live in the plugin.
 - Which page keys go where per page (the rotated key map). Drafted in Stage 2, reviewed in-browser.
