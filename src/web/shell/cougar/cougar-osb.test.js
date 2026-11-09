@@ -93,6 +93,13 @@ assert.deepStrictEqual(O.order('rdr', NAV.rdr).map((i) => i.action), NAV.rdr.map
 // MAP and TGP keep their settings last, in a split pane's flow and on full view's bottom-right key.
 assert.strictEqual(O.PRIORITY.map[O.PRIORITY.map.length - 1], 'mapcfg');
 assert.strictEqual(O.PRIORITY.tgp[O.PRIORITY.tgp.length - 1], 'tgpcfg');
+// A split TGP pane: MAN and TRK on its second page, with CFG.
+{
+  const acts = O.PRIORITY.tgp.map(function (a) { return { label: a, action: a }; });
+  const keys = function (pg) { return O.place(acts, 'top', pg).placed.map(function (p) { return p.item.action; }); };
+  assert.deepStrictEqual(keys(0), ['main', 'tgp-manual-reset', 'tgp-mark-steerpoint', 'tgp-view-wtv', 'tgp-view-stv', 'tgp-ir-off', 'tgp-ir-on']);
+  assert.deepStrictEqual(keys(1), ['tgp-manual-toggle', 'tgp-point-track', 'tgpcfg']);
+}
 assert.strictEqual(O.FULL_PINS.map.mapcfg, 'B5');
 assert.strictEqual(O.FULL_PINS.tgp.tgpcfg, 'B5');
 
