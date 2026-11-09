@@ -1,0 +1,81 @@
+/* The COUGAR layout's SYS page, over pages/afm/afm.css, laid out across (cougar-sys.js): the status
+   toggles as chips on the left (.sys-status; body.sys-icons where the pane has room for their icons),
+   the name and the top-down drawing in the middle column (--sys-left / --sys-right from the pane's
+   edges), the weapons as a text list (.sys-weapons) on the right, or across the bottom under both
+   (body.sys-below). The front view, the pylon boxes and their lines are left out. */
+
+/* ── middle column ──────────────────────────────────────────────────────────────────── */
+.afm-header {
+  min-height: 0;
+  left: var(--sys-left);
+  right: var(--sys-right);
+  padding-top: 4px;
+}
+/* By id: the stock portrait-full rule (body.full.portrait .afm-name) would otherwise win. */
+#afm-name { font-size: var(--sys-name-fs); letter-spacing: 1px; }
+.afm-frame { left: var(--sys-left); right: var(--sys-right); }
+/* afm.js sets these inline (display ''), so the hide needs !important to win. */
+.afm-flags,
+.afm-front-section,
+.afm-pylon-row,
+.afm-pylon-side,
+.afm-pylon-links,
+.afm-pylon-squares { display: none !important; }
+
+/* ── status: the stock toggle buttons as text chips ─────────────────────────────────── */
+.sys-status {
+  position: absolute;
+  left: var(--sys-pad);
+  top: var(--sys-pad);
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  font-size: var(--sys-fs);
+  z-index: 5;
+}
+.afm-flag {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0.45em;
+  width: auto;
+  height: 1.6em;
+  min-width: 0;
+  padding: 0 0.45em;
+  border-radius: 3px;
+}
+.afm-flag-icon { display: none; }
+.afm-flag-lamp { width: 0.55em; height: 0.55em; border-radius: 50%; }
+/* The name takes the state's colour (green on, gray off, red gear down), the stock glyph's job. */
+.afm-flag-label { color: currentColor; letter-spacing: 0.5px; }
+/* Room for the icons: each chip leads with its stock glyph, a size up. */
+.sys-icons .afm-flag { height: 2.1em; }
+.sys-icons .afm-flag-icon { display: block; width: 1.3em; height: 1.3em; }
+
+/* ── weapons: a text list, scrolling by itself when it runs past the pane ───────────── */
+.sys-weapons {
+  position: absolute;
+  right: var(--sys-pad);
+  top: var(--sys-pad);
+  bottom: var(--sys-pad);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+  font-size: var(--sys-fs);
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: right;
+  z-index: 5;
+}
+.sys-weapons::-webkit-scrollbar { display: none; }
+.sys-status[hidden],
+.sys-weapons[hidden] { display: none; }
+/* Centred while the list fits; from the top once it overflows (auto margins never clip the start). */
+.sys-weapon-list { margin: auto 0; display: flex; flex-direction: column; gap: 0.35em; }
+.sys-weapon { overflow-wrap: anywhere; }
+/* Below: a band across the pane's foot, the names wrapping across it, centred, with a pipe between
+   two names on the same line (.sep, set by cougar-sys.js where a line doesn't start). */
+.sys-below .sys-weapons { top: auto; left: var(--sys-pad); text-align: center; }
+.sys-below .sys-weapon-list { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.25em 0; }
+.sys-below .sys-weapon { white-space: nowrap; padding: 0 0.3em; }
+.sys-below .sys-weapon.sep::before { content: '|'; color: var(--no-gray); padding-right: 0.6em; }

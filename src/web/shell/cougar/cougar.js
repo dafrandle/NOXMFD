@@ -74,8 +74,23 @@
   // ── Pages and feeds (as f35.js) ───────────────────────────────────────────────────────
   // The F-35's page table, with LYT told which shell hosts it. MAIN maps to no page (`null`): its
   // destinations are the OSB labels themselves.
-  // WPN is this layout's own page (wpn/cougar-wpn.html), sized for a Cougar pane.
-  const PAGES = Object.assign({}, LayoutPages.F35, { lyt: '/lyt?cougar', wpn: '/assets/shell/cougar/wpn/cougar-wpn.html' });
+  // WPN, the AVN pages, FCR/HSD, AKF and the MD text pages are this layout's own (wpn/, avn/, rdr/,
+  // akf/, md/), laid out from a Cougar pane.
+  const PAGES = Object.assign({}, LayoutPages.F35, {
+    lyt: '/lyt?cougar',
+    wpn: '/assets/shell/cougar/wpn/cougar-wpn.html',
+    adi: '/assets/shell/cougar/avn/cougar-adi.html',
+    avn: '/assets/shell/cougar/avn/cougar-eng.html',
+    hsi: '/assets/shell/cougar/avn/cougar-hsi.html',
+    afm: '/assets/shell/cougar/avn/cougar-sys.html',
+    rdr: '/assets/shell/cougar/rdr/cougar-rdr.html',
+    hsd: '/assets/shell/cougar/rdr/cougar-hsd.html',
+    akf: '/assets/shell/cougar/akf/cougar-akf.html',
+    bdf: '/assets/shell/cougar/md/cougar-bdf.html',
+    pal: '/assets/shell/cougar/md/cougar-bdf.html?pal',
+    obj: '/assets/shell/cougar/md/cougar-obj.html',
+    mis: '/assets/shell/cougar/md/cougar-mis.html',
+  });
 
   const PAGE_FEEDS = {
     avn: ['avn'],
@@ -130,9 +145,12 @@
   const TGP_ZOOM_STEP_INITIAL_DELAY_MS = 350;
   const TGP_ZOOM_STEP_REPEAT_MS = 150;
 
-  // Pictures rather than content a label could cover: in full view they take the whole glass and the
-  // labels sit over them on a scrim (f35.js FULL_BLEED).
-  const FULL_BLEED = { map: true, tgp: true, rwr: true, rdr: true, hsd: true };
+  // Pictures rather than content a label could cover: in full view they reach under the label ring and
+  // the labels sit over them on a scrim (f35.js FULL_BLEED). 'all' takes the whole glass; 'top' keeps
+  // clear of the bottom row only, for a page whose own text runs along its bottom edge (MAP's scale and
+  // readouts). TGP is absent: its picture carries text all round, so it stays inside the ring; so are
+  // FCR and HSD, whose readout columns (rdr/cougar-scope.js) would sit under the side labels.
+  const FULL_BLEED = { map: 'top', rwr: 'all' };
 
   const WPN_MAX_DISPLAY = 5;
 
@@ -552,7 +570,9 @@
 
   // FULL_BLEED applies in full view only: a split pane keeps clear of the label rows.
   function syncFullBleed() {
-    glass.classList.toggle('full-bleed', !split && !!portals[0] && !!FULL_BLEED[portals[0].page()]);
+    const bleed = (!split && portals[0] && FULL_BLEED[portals[0].page()]) || '';
+    glass.classList.toggle('full-bleed', !!bleed);
+    glass.classList.toggle('bleed-top', bleed === 'top');
   }
 
   function addPortal(at, pane, page) {

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD - FCR (COUGAR)</title>
+<!--
+  The COUGAR layout's FCR page (docs/cougar-mfd.md): pages/rdr's B-scope and pages/rdr/rdr.js
+  unchanged, laid out to the pane by cougar-scope.js (CougarScopeLayout): in a pane wider than the
+  page, the scope cropped to its frame between two text columns carrying its readouts. Markup and
+  messages are pages/rdr's, described in pages/rdr/rdr.html.
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/pages/rdr/rdr.css">
+<link rel="stylesheet" href="/assets/shell/cougar/rdr/cougar-scope.css">
+</head>
+<body>
+  <div class="rdr-panel">
+    <svg class="rdr-scope" viewBox="0 0 520 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <text id="rdr-mode"  x="60"  y="42" class="rdr-hdr">RWS</text>
+      <text id="rdr-range" x="460" y="42" class="rdr-hdr" text-anchor="end">40</text>
+
+      <rect x="60" y="70" width="400" height="440" fill="none" stroke="rgba(var(--no-pure-white-rgb),0.45)" stroke-width="2"/>
+      <g id="rdr-grid"></g>
+      <g id="rdr-contacts"></g>
+      <g id="rdr-pitbull"></g>
+      <g id="rdr-cursor-g"></g>
+
+      <!-- Antenna-sweep caret: a small T sitting just above the frame's bottom edge (its
+           stem ends clear of the 2px frame stroke, which would otherwise cover it at y=510),
+           drawn at centre; rdr.css's animation swings it left<->right through this drawn position
+           (CSS translateX is in the SVG's own viewBox units, so ±186 reaches the frame's L/R
+           insets). Shown only while the radar is actively emitting — see rdr.js render(). -->
+      <g id="rdr-sweep">
+        <line x1="252" y1="494" x2="268" y2="494" stroke="rgba(var(--no-pure-white-rgb),0.7)" stroke-width="2"/>
+        <line x1="260" y1="494" x2="260" y2="504" stroke="rgba(var(--no-pure-white-rgb),0.7)" stroke-width="2"/>
+      </g>
+
+      <polygon points="260,510 246,534 260,526 274,534" fill="rgba(var(--no-pure-white-rgb),0.7)"/>
+      <text id="rdr-azl" x="60"  y="534" class="rdr-az">-60</text>
+      <text id="rdr-azr" x="460" y="534" class="rdr-az" text-anchor="end">+60</text>
+
+      <text id="rdr-r1" x="60"  y="566" class="rdr-read"></text>
+      <text id="rdr-r2" x="60"  y="588" class="rdr-read"></text>
+      <text id="rdr-lk" x="460" y="566" class="rdr-read" text-anchor="end"></text>
+    </svg>
+    <div id="rdr-cursor" class="rdr-cursor"></div>
+  </div>
+
+  <div class="rdr-unavailable mfd-empty" id="rdr-unavailable">
+    <span class="mfd-empty-title">FCR</span>&mdash; NOT AVAILABLE &mdash;
+  </div>
+
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/pages/rdr/rdr.js"></script>
+<script src="/assets/shell/cougar/rdr/cougar-scope-layout.js"></script>
+<script src="/assets/shell/cougar/rdr/cougar-scope.js"></script>
+<script src="/assets/shell/cougar/rdr/cougar-rdr.js"></script>
+</body>
+</html>

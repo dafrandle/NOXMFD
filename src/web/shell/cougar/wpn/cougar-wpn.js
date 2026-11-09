@@ -176,6 +176,9 @@ window.addEventListener('message', function (e) {
 
 // The pane's size is this page's viewport, so a split preset or a window change arrives as a resize.
 window.addEventListener('resize', applyLayout);
+// A window resize can arrive mid-way through a split change, before the pane has its final size,
+// so the page's own box is watched as well.
+if (typeof ResizeObserver === 'function') new ResizeObserver(function () { applyLayout(); }).observe(document.documentElement);
 
 applyLayout();
 renderWpn();

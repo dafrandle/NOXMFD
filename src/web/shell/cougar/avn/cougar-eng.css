@@ -1,0 +1,10 @@
+/* The COUGAR layout's ENG page, over pages/avn/avn.css. A cell of the stock 2x2 grid is half the
+   pane each way, so a dial there is min(w/2, h/2); in one row of four it is min(w/4, h). The row
+   draws larger exactly when the pane is more than twice as wide as tall: the short, wide pane of a
+   stacked split. The dials and their text size off their cell (cqmin), so nothing else changes. */
+@media (min-aspect-ratio: 2/1) {
+  .avn-gauge-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+  }
+}

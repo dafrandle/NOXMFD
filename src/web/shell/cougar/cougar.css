@@ -65,6 +65,8 @@ html, body {
   grid-row: 1 / -1;
   grid-column: 1 / -1;
 }
+/* Clear of the bottom row: the page's own bottom-edge text stays out from under its labels. */
+.glass.full-bleed.bleed-top .panes { grid-row: 1 / 7; }
 
 .pane {
   position: relative;
@@ -150,8 +152,10 @@ html, body {
   color: var(--no-amber);
   outline: 1px solid var(--no-amber);
 }
-/* The SOI cursor — the label SELECT will press. */
-.nav-item.cursor {
+/* The SOI cursor — the label SELECT will press. Dark text on the SOI fill; the full-bleed selector
+   keeps that fill from losing to the scrim, which would leave the dark text on a dark pill. */
+.nav-item.cursor,
+.glass.full-bleed .nav-item.cursor {
   color: var(--no-ink);
   background: var(--no-soi);
 }

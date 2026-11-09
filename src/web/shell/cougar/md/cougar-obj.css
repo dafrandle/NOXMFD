@@ -1,0 +1,26 @@
+/* The COUGAR layout's OBJ page, over pages/obj/obj.css: sizes from the pane (--md-*, set by
+   cougar-md.js) instead of vmin. body.md-short drops the title row; the OBJ label above the pane
+   already names it. */
+
+.obj-panel { gap: var(--md-gap); padding: var(--md-pad); }
+.obj-title { font-size: var(--md-small-fs); }
+.obj-row { padding: calc(var(--md-gap) * 0.8 + 2px) 0; }
+.obj-row-head,
+.obj-pos-row { gap: calc(var(--md-fs) * 0.8); }
+.obj-name,
+.obj-pct { font-size: var(--md-fs); }
+.obj-status,
+.obj-pos-row { font-size: var(--md-small-fs); }
+.obj-status { min-width: calc(var(--md-small-fs) * 6); }
+.obj-pct { min-width: calc(var(--md-fs) * 2.6); }
+.obj-pos-grid,
+.obj-pos-dist { min-width: calc(var(--md-small-fs) * 4.5); }
+.obj-positions { gap: calc(var(--md-gap) * 0.4 + 1px); margin-top: calc(var(--md-gap) * 0.6); padding-left: calc(var(--md-fs) * 1.2); }
+.obj-toggle {
+  width: calc(var(--md-fs) * 1.3);
+  height: calc(var(--md-fs) * 1.3);
+  font-size: calc(var(--md-small-fs) * 0.9);
+}
+.obj-list-empty { font-size: var(--md-fs); }
+
+.md-short .obj-header { display: none; }

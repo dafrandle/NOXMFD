@@ -1,0 +1,29 @@
+/* The COUGAR layout's radar scope pages, over pages/rdr/rdr.css or pages/hsd/hsd.css. body.scope-wide
+   (cougar-scope.js) crops the scope SVG and shows its readouts in a text column either side, sized
+   from the pane (--scope-fs, --scope-col); the SVG's own text is hidden there. */
+
+.scope-col {
+  display: none;
+  position: absolute;
+  top: var(--scope-pad);
+  bottom: var(--scope-pad);
+  width: var(--scope-col);
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6em;
+  font-family: var(--no-font);
+  font-size: var(--scope-fs);
+  line-height: 1.25;
+  color: var(--no-white);
+  pointer-events: none;
+}
+.scope-wide .scope-col { display: flex; }
+.scope-col.left  { left: var(--scope-pad); text-align: left; }
+.scope-col.right { right: var(--scope-pad); text-align: right; }
+.scope-item:empty { display: none; }
+.scope-item.big  { font-size: 1.4em; letter-spacing: 1px; }
+.scope-item.dim  { color: var(--no-green-dim); }
+.scope-item.lock { color: var(--no-amber); }
+
+.scope-wide .rdr-scope text,
+.scope-wide .hsd-scope text { display: none; }
