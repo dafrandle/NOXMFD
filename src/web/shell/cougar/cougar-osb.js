@@ -45,7 +45,9 @@
   // listed (an extension's own page on MAIN, say) follow the listed ones in their given order.
   //   main — the flight pages, then mission data, squads, extensions, and CFG last.
   //   map/tgp — controls before their CFG page. Full view pins these pages' keys instead (FULL_PINS),
-  //             so this order is what a split pane flows.
+  //             so this order is what a split pane flows. TGP's MAN and TRK go to the pane's second
+  //             page, beside CFG: entering manual control is a deliberate step, and the first page
+  //             keeps the view and colour switches a lock uses.
   //   md   — the MD group's shared switch (NAV.akf/mis/obj/bdf/pal): the kill feed (MD's landing
   //          page), the force boards and objectives, then mission info and documents.
   const MD = ['main', 'akf', 'pal', 'bdf', 'obj', 'mis', 'doc'];
@@ -53,8 +55,8 @@
     main: ['map', 'tgp', 'wpn', 'rdr', 'rwr', 'tgt', 'adi', 'akf', 'sqd', 'ext', 'hud'],
     akf: MD, mis: MD, obj: MD, bdf: MD, pal: MD,
     map:  ['main', 'flw', 'grid', 'wpt', 'slew', 'rt-next', 'rt-prev', 'wpt-next', 'wpt-prev', 'mapcfg'],
-    tgp:  ['main', 'tgp-manual-toggle', 'tgp-point-track', 'tgp-manual-reset', 'tgp-mark-steerpoint',
-           'tgp-view-wtv', 'tgp-view-stv', 'tgp-ir-off', 'tgp-ir-on', 'tgpcfg'],
+    tgp:  ['main', 'tgp-manual-reset', 'tgp-mark-steerpoint', 'tgp-view-wtv', 'tgp-view-stv',
+           'tgp-ir-off', 'tgp-ir-on', 'tgp-manual-toggle', 'tgp-point-track', 'tgpcfg'],
   };
   function order(page, items) {
     const pri = PRIORITY[page];
