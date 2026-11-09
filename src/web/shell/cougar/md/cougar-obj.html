@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — OBJ</title>
+<!--
+  The COUGAR layout's OBJ page (docs/cougar-mfd.md): pages/obj's active-objectives list, sized from
+  its pane by CougarMdLayout (cougar-md.js) instead of from vmin. pages/obj/obj.js runs unchanged on
+  this markup, which is pages/obj's own. The list scrolls by itself when it doesn't fit.
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/pages/obj/obj.css">
+<link rel="stylesheet" href="/assets/shell/cougar/md/cougar-obj.css">
+</head>
+<body data-autoscroll="#obj-list">
+  <div class="obj-panel" id="obj-panel">
+    <div class="obj-header">
+      <span class="obj-title">ACTIVE OBJECTIVES</span>
+    </div>
+    <div class="obj-list" id="obj-list"></div>
+    <div class="obj-list-empty" id="obj-list-empty">&mdash; NO ACTIVE OBJECTIVES &mdash;</div>
+  </div>
+
+  <div class="obj-unavailable mfd-empty" id="obj-unavailable">
+    <span class="mfd-empty-title">OBJ</span>&mdash; UNAVAILABLE &mdash;
+  </div>
+
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/shell/cougar/md/cougar-md-layout.js"></script>
+<script src="/assets/shell/cougar/cougar-autoscroll.js"></script>
+<script src="/assets/shell/cougar/md/cougar-md.js"></script>
+<script src="/assets/pages/obj/obj.js"></script>
+</body>
+</html>

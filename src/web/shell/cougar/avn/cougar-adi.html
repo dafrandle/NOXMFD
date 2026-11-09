@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — ADI (COUGAR)</title>
+<!--
+  The COUGAR layout's ADI page (docs/cougar-mfd.md): pages/adi's instrument, with its readouts
+  arranged to the pane by CougarAvnLayout so the short, wide pane of a stacked split draws the ball
+  from its height instead of shrinking it. Same 'adi' slice, same styles (pages/adi/adi.css).
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/pages/adi/adi.css">
+<style>
+  /* The wide arrangement's readouts (CougarAvnLayout): a step up from the stock sizes. */
+  .adi-label.wide     { font-size: 26px; }
+  .adi-value.wide     { font-size: 50px; }
+  .adi-value.big.wide { font-size: 60px; }
+</style>
+</head>
+<body>
+<div class="adi-panel">
+  <svg id="adi-svg" class="adi-svg" preserveAspectRatio="xMidYMid meet"
+       role="img" aria-label="Attitude indicator with angle of attack and vertical speed bars"></svg>
+</div>
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/pages/wpt/wpt-route.js"></script>
+<script src="/assets/pages/adi/adi-math.js"></script>
+<script src="/assets/shell/cougar/avn/cougar-avn-layout.js"></script>
+<script src="/assets/shell/cougar/avn/cougar-adi.js"></script>
+</body>
+</html>

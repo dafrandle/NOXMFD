@@ -1,0 +1,11 @@
+/* The COUGAR layout's MIS page, over pages/mis/mis.css: sizes from the pane (--md-*, set by
+   cougar-md.js) instead of vmin. body.md-short puts the time and score lines side by side, so the
+   description keeps as much of the pane as it can. */
+
+.mis-panel { gap: var(--md-gap); padding: var(--md-pad); }
+.mis-name { font-size: var(--md-title-fs); }
+.mis-stats { font-size: var(--md-small-fs); gap: calc(var(--md-gap) * 0.4 + 1px); padding: calc(var(--md-gap) * 0.6) 0; }
+.mis-description { font-size: var(--md-fs); padding-top: var(--md-gap); }
+
+.md-short .mis-name { font-size: var(--md-fs); }
+.md-short .mis-stats { flex-direction: row; justify-content: center; flex-wrap: wrap; column-gap: 2.5em; padding: 0; }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — MIS</title>
+<!--
+  The COUGAR layout's MIS page (docs/cougar-mfd.md): pages/mis's mission info, sized from its pane by
+  CougarMdLayout (cougar-md.js) instead of from vmin. pages/mis/mis.js runs unchanged on this markup,
+  which is pages/mis's own. The description scrolls by itself when it doesn't fit.
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/pages/mis/mis.css">
+<link rel="stylesheet" href="/assets/shell/cougar/md/cougar-mis.css">
+</head>
+<body data-autoscroll="#mis-description">
+  <div class="mis-panel" id="mis-panel">
+    <div class="mis-header">
+      <span class="mis-name" id="mis-name">—</span>
+    </div>
+
+    <div class="mis-stats">
+      <span id="mis-time">Time --:--:--  --  Duration --:--:--</span>
+      <span id="mis-score">Score 0.0  --  Conventional level</span>
+    </div>
+
+    <div class="mis-description" id="mis-description"></div>
+  </div>
+
+  <div class="mis-unavailable mfd-empty" id="mis-unavailable">
+    <span class="mfd-empty-title">MIS</span>&mdash; UNAVAILABLE &mdash;
+  </div>
+
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/shell/cougar/md/cougar-md-layout.js"></script>
+<script src="/assets/shell/cougar/cougar-autoscroll.js"></script>
+<script src="/assets/shell/cougar/md/cougar-md.js"></script>
+<script src="/assets/pages/mis/mis.js"></script>
+</body>
+</html>

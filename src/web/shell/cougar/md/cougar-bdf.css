@@ -1,0 +1,49 @@
+/* The COUGAR layout's BDF/PAL page, over pages/bdf/bdf.css: sizes from the pane (--md-*, set by
+   cougar-md.js) instead of vmin. Unit grids wrap rather than squeezing their cells into one row, since
+   bigger labels no longer fit the stock fixed-width cells; the sections scroll when they overflow.
+   body.md-short folds the faction name and the stats onto one line above the sections. */
+
+.bdf-panel { gap: var(--md-gap); padding: var(--md-pad); }
+.bdf-faction { font-size: var(--md-title-fs); }
+.bdf-stat-label,
+.bdf-forces-label { font-size: var(--md-small-fs); }
+.bdf-stat-value { font-size: var(--md-big-fs); }
+.bdf-logo { width: calc(var(--md-icon) * 1.8); height: calc(var(--md-icon) * 1.8); }
+
+.bdf-sections { gap: var(--md-gap); }
+.bdf-section { gap: calc(var(--md-fs) * 0.8); padding-top: calc(var(--md-gap) * 0.8); }
+.bdf-section-head { font-size: var(--md-fs); min-width: calc(var(--md-fs) * 6.2); }
+.bdf-section-total { font-size: var(--md-title-fs); }
+
+.bdf-section-grid,
+#grid-aircraft {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--md-gap) * 0.6) calc(var(--md-fs) * 0.9);
+  overflow: visible;
+}
+.bdf-cell { padding: 2px 3px; }
+.bdf-cell .bdf-icon { width: var(--md-icon); height: var(--md-icon); }
+.bdf-cell .bdf-label { font-size: var(--md-small-fs); }
+.bdf-cell .bdf-count { font-size: var(--md-fs); }
+
+/* ── short: name and stats on one line, cells one line each ───────────────────────────── */
+.md-short .bdf-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: 1.2em;
+}
+.md-short .bdf-header { border: 0; padding: 0; align-self: center; text-align: left; }
+.md-short .bdf-faction { font-size: var(--md-fs); }
+.md-short .bdf-top { padding: 0; justify-content: flex-end; gap: 1.2em; min-width: 0; }
+.md-short .bdf-col-left,
+.md-short .bdf-col-right { flex: none; flex-direction: row; align-items: baseline; gap: 1.2em; }
+.md-short .bdf-stat { flex-direction: row; align-items: baseline; gap: 0.4em; }
+.md-short .bdf-stat-value { font-size: var(--md-fs); }
+.md-short .bdf-forces-label,
+.md-short .bdf-logo-wrap { display: none; }
+.md-short .bdf-sections { grid-column: 1 / -1; }
+.md-short .bdf-section-head { flex-direction: row; align-items: baseline; gap: 0.5em; min-width: calc(var(--md-fs) * 8.5); }
+.md-short .bdf-section-total { font-size: var(--md-fs); }
+.md-short .bdf-cell { flex-direction: row; align-items: center; gap: 0.35em; padding: 1px 2px; }

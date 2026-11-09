@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD - HSD (COUGAR)</title>
+<!--
+  The COUGAR layout's HSD page (docs/cougar-mfd.md): pages/hsd's display and pages/hsd/hsd.js
+  unchanged, laid out to the pane by cougar-scope.js (CougarScopeLayout): in a pane wider than the
+  page, the display cropped to its rings between two text columns carrying its readouts. Markup and
+  messages are pages/hsd's, described in pages/hsd/hsd.html.
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/pages/hsd/hsd.css">
+<link rel="stylesheet" href="/assets/shell/cougar/rdr/cougar-scope.css">
+</head>
+<body>
+  <div class="hsd-panel">
+    <svg class="hsd-scope" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <text id="hsd-range" x="552" y="44" class="hsd-hdr" text-anchor="end"></text>
+
+      <g id="hsd-grid"></g>
+      <g id="hsd-radar"></g>
+      <!-- Active route (docs/rdr-fcr-hsd.md): DCS F-16 HSD style — thin solid white lines through
+           the waypoints in order, small hollow circles at each one. No numbering, no current-
+           waypoint highlight, no reached/pending distinction. Driven by waypoints-store.js's own
+           WaypointsStore.getActiveRoute(), not the 'hsd' postMessage shape. -->
+      <g id="hsd-route"></g>
+      <!-- AA threat rings (issue #74): yellow rings around known enemy ground/naval SAM sites,
+           radius = that unit's effective weapon engagement range. Background layer, drawn below
+           contact icons and not part of the PAD cursor hit-test. -->
+      <g id="hsd-threats"></g>
+      <g id="hsd-contacts"></g>
+      <!-- Filled by hsd.js's renderOwnship() — the symbol itself is fixed, but its centre (CY)
+           moves between CEN and DEP mode, so it has to be drawn in script rather than fixed markup. -->
+      <g id="hsd-ownship"></g>
+      <!-- PAD acquisition gate (docs/page-cursor.md), same two-bar look as FCR's #rdr-cursor-g —
+           pad-cursor.js moves the invisible #hsd-cursor div below in panel px; hsd.js converts
+           that to viewBox units and paints the visible gate here. -->
+      <g id="hsd-cursor-g"></g>
+
+      <text id="hsd-r1" x="48" y="544" class="hsd-read hsd-lock-read"></text>
+      <text id="hsd-r2" x="48" y="566" class="hsd-read hsd-lock-read"></text>
+      <text id="hsd-link" x="552" y="544" class="hsd-read" text-anchor="end"></text>
+      <text id="hsd-locks" x="552" y="566" class="hsd-read" text-anchor="end"></text>
+    </svg>
+    <div id="hsd-cursor" class="hsd-cursor"></div>
+  </div>
+
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/pages/wpt/wpt-route.js"></script>
+<script src="/assets/pages/wpt/waypoints-store.js"></script>
+<script src="/assets/pages/hsd/hsd.js"></script>
+<script src="/assets/shell/cougar/rdr/cougar-scope-layout.js"></script>
+<script src="/assets/shell/cougar/rdr/cougar-scope.js"></script>
+<script src="/assets/shell/cougar/rdr/cougar-hsd.js"></script>
+</body>
+</html>

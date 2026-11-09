@@ -1,0 +1,39 @@
+/* The COUGAR layout's AKF page, over pages/akf/akf.css: every size comes from the pane through
+   cougar-akf.js (CougarAkfLayout) instead of vmin. body.akf-short is the one-line stats arrangement. */
+
+.akf-panel { gap: var(--akf-gap); padding: var(--akf-pad); }
+.akf-header-title { font-size: var(--akf-title-fs); }
+.akf-density-toggle { font-size: calc(var(--akf-label-fs) * 0.85); }
+.akf-section-label { font-size: var(--akf-label-fs); }
+.akf-feed-lines { font-size: var(--akf-line-fs); gap: var(--akf-line-gap); }
+.akf-kill-row,
+.akf-funds-row { font-size: var(--akf-stat-fs); }
+.akf-value-figure { font-size: var(--akf-rank-fs); }
+
+/* ── short: no title row, stats on one line ──────────────────────────────────────────── */
+.akf-short .akf-header { display: none; }
+.akf-short .akf-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.4em;
+  padding-top: 3px;
+  font-size: var(--akf-stat-fs);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.akf-short .akf-card { flex-direction: row; align-items: baseline; gap: 0.5em; flex: none; }
+.akf-short .akf-stats .akf-section-label { display: none; }
+.akf-short .akf-kills-grid { display: flex; gap: 1em; }
+.akf-short .akf-kill-row { gap: 0.4em; justify-content: flex-start; }
+.akf-short .akf-funds-row { display: none; }
+.akf-short .akf-funds-net { display: flex; gap: 0.4em; border: 0; margin: 0; padding: 0; }
+.akf-short .akf-stats .akf-card-rank .akf-section-label {
+  display: block;
+  border: 0; margin: 0; padding: 0;
+  font-size: var(--akf-stat-fs);
+  letter-spacing: 0;
+  color: var(--no-green-dim);
+}
+.akf-short .akf-value-figure { padding: 0; }
+/* The density switch, moved to the end of the strip by cougar-akf.js. */
+.akf-short .akf-density-toggle { margin-left: auto; }

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — AKF (COUGAR)</title>
+<!--
+  The COUGAR layout's AKF page (docs/cougar-mfd.md): pages/akf's advanced kill feed, sized from its
+  pane by CougarAkfLayout (cougar-akf.js) instead of from vmin, so the short, wide pane of a stacked
+  split reads at a usable size. The behaviour is pages/akf/akf.js unchanged: this markup keeps every
+  id and class it reads, and adds only the short kill-type names and the rank card's class the
+  one-line stats strip uses. Messages, PAD cursor and controls are as described in pages/akf/akf.html.
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/shared/slide-switch.css">
+<link rel="stylesheet" href="/assets/pages/akf/akf.css">
+<link rel="stylesheet" href="/assets/shell/cougar/akf/cougar-akf.css">
+</head>
+<body>
+  <div class="akf-panel">
+    <div class="akf-header" id="akf-header">
+      <span class="akf-header-spacer" aria-hidden="true"></span>
+      <span class="akf-header-title">ADVANCED KILL FEED</span>
+      <div class="akf-density-toggle slide-toggle pad-hoverable" id="akf-density-toggle" title="Toggle feed detail level">
+        <span class="slide-label slide-label-left">DETAILED</span>
+        <span class="slide-switch"><span class="slide-knob"></span></span>
+        <span class="slide-label slide-label-right">COMPACT</span>
+      </div>
+    </div>
+
+    <div class="akf-feeds" id="akf-feeds">
+      <div class="akf-feed" id="akf-feed-all">
+        <div class="akf-section-label">ALL</div>
+        <div class="akf-feed-lines" id="akf-all"></div>
+      </div>
+
+      <div class="akf-resizer pad-hoverable" id="akf-resizer" title="Drag to resize">
+        <div class="akf-resizer-arrows">
+          <span class="akf-resizer-arrow akf-resizer-arrow-left">&#9664;</span>
+          <span class="akf-resizer-arrow akf-resizer-arrow-right">&#9654;</span>
+        </div>
+      </div>
+
+      <div class="akf-feed" id="akf-feed-player">
+        <div class="akf-section-label">PLAYER</div>
+        <div class="akf-feed-lines" id="akf-player"></div>
+      </div>
+    </div>
+
+    <div class="akf-stats" id="akf-stats">
+      <div class="akf-card">
+        <div class="akf-section-label">SESSION KILLS</div>
+        <div class="akf-kills-grid">
+          <div class="akf-kill-row"><span class="akf-kill-type" data-short="AIR">AIRCRAFT</span><span class="akf-kill-count" id="akf-k-aircraft">0</span></div>
+          <div class="akf-kill-row"><span class="akf-kill-type" data-short="SHIP">SHIP</span><span class="akf-kill-count" id="akf-k-ship">0</span></div>
+          <div class="akf-kill-row"><span class="akf-kill-type" data-short="VEH">VEHICLE</span><span class="akf-kill-count" id="akf-k-vehicle">0</span></div>
+          <div class="akf-kill-row"><span class="akf-kill-type" data-short="BLDG">BUILDING</span><span class="akf-kill-count" id="akf-k-building">0</span></div>
+        </div>
+      </div>
+
+      <div class="akf-card">
+        <div class="akf-section-label">FUNDS</div>
+        <div class="akf-funds-row"><span class="akf-funds-label">GAINED</span><span class="akf-funds-gain" id="akf-funds-gained">+0</span></div>
+        <div class="akf-funds-row"><span class="akf-funds-label">SPENT</span><span class="akf-funds-spend" id="akf-funds-spent">-0</span></div>
+        <div class="akf-funds-row akf-funds-net"><span class="akf-funds-label">NET</span><span class="akf-funds-gain" id="akf-funds-net">+0</span></div>
+      </div>
+
+      <div class="akf-card akf-card-rank">
+        <div class="akf-section-label">RANK</div>
+        <div class="akf-value-figure" id="akf-rank">0</div>
+      </div>
+    </div>
+
+    <div id="pad-cursor" class="pad-cursor"></div>
+  </div>
+
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/shell/cougar/akf/cougar-akf-layout.js"></script>
+<script src="/assets/shell/cougar/akf/cougar-akf.js"></script>
+<script type="module" src="/assets/pages/akf/akf.js"></script>
+</body>
+</html>

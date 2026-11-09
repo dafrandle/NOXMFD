@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — HSI (COUGAR)</title>
+<!--
+  The COUGAR layout's HSI page (docs/cougar-mfd.md): pages/hsi's instrument, with its readouts
+  arranged to the pane by CougarAvnLayout so the short, wide pane of a stacked split gives the
+  readouts a column either side of the compass instead of shrinking them in its corners. Same slices
+  ('adi', 'mapinfo', the route store), same styles (pages/hsi/hsi.css).
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/pages/hsi/hsi.css">
+<style>
+  /* The wide arrangement's readouts (CougarAvnLayout): a step up from the stock sizes. */
+  .hsi-label.wide { font-size: 32px; }
+  .hsi-value.wide { font-size: 64px; }
+  .mid { text-anchor: middle; }
+</style>
+</head>
+<body>
+<div class="hsi-panel">
+  <svg id="hsi-svg" class="hsi-svg" preserveAspectRatio="xMidYMid meet"
+       role="img" aria-label="Horizontal situation indicator"></svg>
+</div>
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/pages/wpt/wpt-route.js"></script>
+<script src="/assets/pages/wpt/waypoints-store.js"></script>
+<script src="/assets/pages/adi/adi-math.js"></script>
+<script src="/assets/shell/cougar/avn/cougar-avn-layout.js"></script>
+<script src="/assets/shell/cougar/avn/cougar-hsi.js"></script>
+</body>
+</html>
