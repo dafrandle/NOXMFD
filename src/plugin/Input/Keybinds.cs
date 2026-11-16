@@ -1022,7 +1022,7 @@ namespace NOXMFD
 
         // Rewired documents the instance GUID as available only on some input sources; a source that
         // can't supply one falls back to name matching rather than breaking capture or re-pinning.
-        private static (string Guid, string Name) Identity(Joystick j)
+        internal static (string Guid, string Name) Identity(Joystick j)
         {
             string guid = string.Empty;
             try

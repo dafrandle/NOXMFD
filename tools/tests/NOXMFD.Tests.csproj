@@ -73,6 +73,10 @@
          ThemeStore's own ConfigDir/LogWarning seam, same shape as RouteStore.cs. -->
     <Compile Include="..\..\src\plugin\Stores\ThemeColors.cs" Link="Source\ThemeColors.cs" />
     <Compile Include="..\..\src\plugin\Stores\ThemeStore.cs" Link="Source\ThemeStore.cs" />
+    <!-- CougarBindStore.cs / CougarFrameLogic.cs (Cougar frame bindings, docs/cougar-mfd.md) — BCL-only
+         through the store's own ConfigDir/LogWarning seam; JoystickIdentity.cs is linked below. -->
+    <Compile Include="..\..\src\plugin\Stores\CougarBindStore.cs" Link="Source\CougarBindStore.cs" />
+    <Compile Include="..\..\src\plugin\Input\CougarFrameLogic.cs" Link="Source\CougarFrameLogic.cs" />
     <Compile Include="..\..\src\plugin\Http\CommandContentType.cs" Link="Source\CommandContentType.cs" />
     <!-- TelemetryAssets.cs (docs/plugin-efficiency-audit.md findings 13/14) — only its two pure
          decision helpers (AcceptsGzip, IsCompressibleContentType) get exercised here; the file's

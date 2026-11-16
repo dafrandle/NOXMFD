@@ -17,6 +17,9 @@ namespace NOXMFD
             // Each step is guarded on its own (StepGuard.cs): a throw in any of them must not skip
             // the mission detection at the end, which starts the telemetry reader.
             try { Keybinds.Poll(); } catch (Exception ex) { StepGuard.Failed("Keybinds.Poll", ex); }
+            // Cougar OSB frames (docs/cougar-mfd.md): presses to the browsers, and the binding wizard's
+            // capture, which runs at the main menu as much as in a mission.
+            try { CougarFrames.Poll(); } catch (Exception ex) { StepGuard.Failed("CougarFrames.Poll", ex); }
 
             // Drained here so the /keybinds page works from the main menu with no mission-scoped
             // reader running. Handlers validate against live state and no-op without a mission.

@@ -122,6 +122,11 @@ namespace NOXMFD
                 string lastServerPlayers = string.Empty;
                 string lastThemes = string.Empty;
                 string lastSysDmg = string.Empty;
+                // Cougar frames (docs/cougar-mfd.md): the bindings/wizard state, change-gated like
+                // themes; and the presses, every one not yet sent here, from the moment this
+                // connection opened (a window never replays presses made before it was there).
+                string lastCougar = string.Empty;
+                long lastCougarPress = CougarFrames.Presses.Head;
                 int sinceFrame = FrameEveryMs;   // send a frame immediately on connect
                 while (!ct.IsCancellationRequested)
                 {
@@ -255,6 +260,22 @@ namespace NOXMFD
                         lastSysDmg = sysDmg;
                         byte[] dbytes = Encoding.UTF8.GetBytes("event: sysdmg\ndata: " + sysDmg + "\n\n");
                         await ctx.Response.OutputStream.WriteAsync(dbytes, 0, dbytes.Length, ct).ConfigureAwait(false);
+                        wrote = true;
+                    }
+
+                    string cougar = CougarFrames.StateJson;
+                    if (!string.Equals(cougar, lastCougar, StringComparison.Ordinal))
+                    {
+                        lastCougar = cougar;
+                        byte[] cbytes = Encoding.UTF8.GetBytes("event: cougar\ndata: " + cougar + "\n\n");
+                        await ctx.Response.OutputStream.WriteAsync(cbytes, 0, cbytes.Length, ct).ConfigureAwait(false);
+                        wrote = true;
+                    }
+                    string? presses = CougarFrames.Presses.JsonSince(ref lastCougarPress);
+                    if (presses != null)
+                    {
+                        byte[] pbytes = Encoding.UTF8.GetBytes("event: cougar-press\ndata: " + presses + "\n\n");
+                        await ctx.Response.OutputStream.WriteAsync(pbytes, 0, pbytes.Length, ct).ConfigureAwait(false);
                         wrote = true;
                     }
 

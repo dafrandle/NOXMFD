@@ -60,6 +60,9 @@ namespace NOXMFD
             ThemeStore.LogWarning = msg => Log?.LogWarning(msg);
             ThemeStore.ThemesDir = ThemesFolder();                             // drop-in theme files, beside DOC's kneeboard folder
             TryBind("Colour themes", ThemeStore.Load);                         // issue #105 — CFG > UI colour themes persisted to disk
+            CougarBindStore.ConfigDir = Paths.ConfigPath;                      // same BepInEx-free seam as RouteStore
+            CougarBindStore.LogWarning = msg => Log?.LogWarning(msg);
+            TryBind("Cougar frame bindings", CougarBindStore.Load);            // docs/cougar-mfd.md — OSB frame bindings persisted to disk
             TryBind("HUD presets", HudPresetStore.Load);                       // issue #50 follow-up — 5 numbered HUD-filter presets persisted to disk
             TryBind("HUD presets self-check", HudPresetStore.SelfCheck);        // docs/hud-presets.md — pure JSON round-trip, same reasoning as JsonLite above
             TryBind("TGT presets", TgtPresetStore.Load);                       // issue #78 — 5 numbered TGT-filter presets persisted to disk

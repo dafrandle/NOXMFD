@@ -239,6 +239,13 @@ namespace NOXMFD
                     }) },
                 { "keybind.set-key",    e => Log("set-key",    e.bind, Keybinds.SetKeyBind(e.bind ?? string.Empty, e.key ?? string.Empty, e.on)) },
                 { "keybind.arm-joy",    e => Log("arm-joy",    e.bind, Keybinds.ArmJoyCapture(e.bind ?? string.Empty, e.on)) },
+                // Cougar frame binding (docs/cougar-mfd.md): wname = profile, bind = frame input
+                // (T1..R5, tl-..br+) or "pair", index = device button (-1 clears).
+                { "cougar.arm",    e => LogCougar("arm",    e.wname, e.bind, CougarFrames.Arm(e.wname, e.bind)) },
+                { "cougar.cancel", e => CougarFrames.Cancel() },
+                { "cougar.force",  e => LogCougar("force",  e.wname, e.bind, CougarFrames.Force()) },
+                { "cougar.set",    e => LogCougar("set",    e.wname, e.bind, CougarBindStore.Set(e.wname, e.bind, e.index)) },
+                { "cougar.clear",  e => LogCougar("clear",  e.wname, e.bind, CougarBindStore.Clear(e.wname)) },
                 { "keybind.resolve",    e => Log("resolve",    e.bind, Keybinds.ResolveConflict(e.group ?? string.Empty)) },
                 { "keybind.cancel-joy", e => Keybinds.CancelJoyCapture() },
                 { "keybind.clear-joy",  e => Log("clear-joy",  e.bind, Keybinds.ClearJoyBind(e.bind ?? string.Empty)) },
@@ -367,6 +374,11 @@ namespace NOXMFD
                 { "tgt-preset.delete", e => LogTgtPreset("delete", TgtPresetStore.Delete(e.index)) },
                 { "tgt-preset.load",   e => LogTgtPreset("load",   TgtPresetStore.LoadPreset(e.index)) },
             };
+
+        private static void LogCougar(string op, string? profile, string? input, bool ok)
+        {
+            if (!ok) Plugin.Log?.LogInfo($"[NOXMFD] cougar.{op} '{profile}' '{input}': rejected.");
+        }
 
         // Keybind writes just delegate to the Keybinds registry; log rejections (unknown id / bad key).
         private static void Log(string op, string? bind, bool ok)
