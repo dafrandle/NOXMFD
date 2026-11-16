@@ -20,6 +20,12 @@ for (const w of [460, 700, 980]) {
 // The short pane reads bigger than the stock page did there: pages/akf's feed text is
 // clamp(11px, 1.9vmin, 15px), which a 145px-tall pane pins at 11.
 assert.ok(L.layoutFor(460, 145).lineFs > 11);
+{
+  // Every pane reads at the 1/3 pane's size (textH).
+  const sizes = [522, 347, 260, 173].map(h => L.layoutFor(493, h, 174));
+  assert.ok(sizes.every(l => l.lineFs === sizes[3].lineFs && l.statFs === sizes[3].statFs && l.labelFs === sizes[3].labelFs), 'same text in every pane');
+  assert.strictEqual(sizes[0].size, 'tall');
+}
 assert.ok(L.layoutFor(980, 285).lineFs >= 18);
 assert.ok(L.layoutFor(980, 400).lineFs >= 17);   // the 50/50 pane
 

@@ -7,22 +7,26 @@
 //   tall  — the stock arrangement, text scaled to the pane.
 //   short — the page's own compact arrangement (a title row dropped, stats folded onto one line).
 // Whatever still doesn't fit scrolls by itself (cougar-autoscroll.js).
+//
+// Text sizes come from `textH`, the 1/3 pane's height (CougarText.textHeight), not this pane's: every
+// pane reads at the 1/3 pane's size, and a bigger one shows more lines. Spacing still follows the pane.
 (function (root) {
   const TALL_MIN = 300;      // px of pane height for each page's stock arrangement
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-  // layoutFor(w, h) -> { size: 'tall' | 'short', pad, gap, fs, smallFs, titleFs, bigFs, iconPx }
+  // layoutFor(w, h, textH = h) -> { size: 'tall' | 'short', pad, gap, fs, smallFs, titleFs, bigFs, iconPx }
   //   fs is body text (list rows, description, section names); smallFs secondary text (captions,
   //   sub-rows, status); titleFs a page's title; bigFs a headline figure; iconPx a unit icon's box.
-  function layoutFor(w, h) {
+  function layoutFor(w, h, textH) {
     w = Math.max(0, w || 0);
     h = Math.max(0, h || 0);
+    const th = typeof textH === 'number' ? Math.max(0, textH) : h;
     const size = h >= TALL_MIN ? 'tall' : 'short';
     const tall = size === 'tall';
     // A narrow pane can't carry the bigger sizes across a row: names are truncated sooner.
     const widthCap = w < 400 ? 16 : 22;
-    const fs = Math.round(tall ? clamp(h * 0.04, 15, widthCap) : clamp(h * 0.09, 13, Math.min(widthCap, 18)));
+    const fs = Math.round(clamp(th * 0.09, 13, Math.min(widthCap, 18)));
     return {
       size: size,
       pad: Math.round(tall ? clamp(h * 0.02, 6, 14) : clamp(h * 0.03, 4, 8)),

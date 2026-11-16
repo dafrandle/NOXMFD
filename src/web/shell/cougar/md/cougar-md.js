@@ -10,7 +10,7 @@
                  titleFs: '--md-title-fs', bigFs: '--md-big-fs', iconPx: '--md-icon' };
   let layout = null;
   function applyLayout() {
-    layout = L.layoutFor(window.innerWidth, window.innerHeight);
+    layout = L.layoutFor(window.innerWidth, window.innerHeight, CougarText.textHeight(window));
     for (const k in VARS) body.style.setProperty(VARS[k], layout[k] + 'px');
     body.classList.toggle('md-short', layout.size === 'short');
     body.classList.toggle('md-tall', layout.size === 'tall');

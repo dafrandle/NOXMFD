@@ -9,6 +9,9 @@
 //   short — no title row (the AKF label above the pane already names it); the feeds take the height,
 //           and the stats fold into one line along the bottom: kill counts with short names, net
 //           funds, rank, and the density switch at its end.
+//
+// Text sizes come from `textH`, the 1/3 pane's height (CougarText.textHeight), not this pane's: every
+// pane reads at the 1/3 pane's size, and a bigger one shows more lines. Spacing still follows the pane.
 (function (root) {
   const TALL_MIN = 300;      // px of pane height for the title row and the stat cards
 
@@ -23,20 +26,21 @@
   //   statFs:  stat readouts; rankFs: the rank figure (tall: its own card)
   //   stripH:  the stats band's height (short: the one-line strip)
   // }
-  function layoutFor(w, h) {
+  function layoutFor(w, h, textH) {
     w = Math.max(0, w || 0);
     h = Math.max(0, h || 0);
+    const th = typeof textH === 'number' ? Math.max(0, textH) : h;
     const size = h >= TALL_MIN ? 'tall' : 'short';
     const tall = size === 'tall';
     const pad = Math.round(tall ? clamp(h * 0.02, 6, 14) : clamp(h * 0.03, 4, 8));
     const gap = Math.round(tall ? clamp(h * 0.012, 4, 10) : 4);
     // A narrow pane can't carry the bigger sizes across a feed column: names are truncated sooner.
     const widthCap = w < 400 ? 15 : 20;
-    const lineFs = Math.round(tall ? clamp(h * 0.045, 14, widthCap) : clamp(h * 0.085, 13, Math.min(widthCap, 18)));
+    const lineFs = Math.round(clamp(th * 0.085, 13, Math.min(widthCap, 18)));
     const labelFs = Math.round(clamp(lineFs * 0.72, 10, 14));
-    const statFs = Math.round(tall ? clamp(h * 0.035, 14, 18) : clamp(h * 0.075, 12, 16));
-    const rankFs = Math.round(tall ? clamp(h * 0.055, 24, 40) : statFs);
-    const titleFs = Math.round(clamp(h * 0.035, 15, 24));
+    const statFs = Math.round(clamp(th * 0.075, 12, 16));
+    const rankFs = statFs;
+    const titleFs = Math.round(lineFs * 1.15);
     const lineGap = Math.round(clamp(lineFs * 0.3, 3, 6));
     const lineH = Math.round(lineFs * 1.35) + lineGap;
     // Tall: three cards, the tallest being SESSION KILLS (caption + two rows of counts) or FUNDS
