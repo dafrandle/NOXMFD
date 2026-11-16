@@ -317,6 +317,35 @@ namespace NOXMFD.Tests
         // BuildHsd already trusts UnitDefinition.typeIdentity.air for its own aerial-only contact
         // list (docs/atc-extension-support.md) — a ground vehicle, ship, or building must default
         // closed here the same way, not leak in as an aircraft.
+        // Category / subtype for the Cougar target list: present when known, absent otherwise.
+        [Fact]
+        public void Unit_contact_carries_category_and_subtype_when_known()
+        {
+            var s = default(TelemetrySnapshot);
+            s.Units = new[]
+            {
+                new UnitInfo { Id = 1, Type = "SA-6", Category = 'g', Subtype = "SAM" },
+                new UnitInfo { Id = 2, Type = "MiG-29", Category = 'a' },
+                new UnitInfo { Id = 3, Type = "?" },
+            };
+            var list = Arr(Root(s)["contacts"]);
+            Assert.Equal("g", Obj(list[0])["c"]);
+            Assert.Equal("SAM", Obj(list[0])["k"]);
+            Assert.Equal("a", Obj(list[1])["c"]);
+            Assert.False(Obj(list[1]).ContainsKey("k"));
+            Assert.False(Obj(list[2]).ContainsKey("c"));
+        }
+
+        [Fact]
+        public void Rwr_entry_carries_the_emitters_id()
+        {
+            var s = default(TelemetrySnapshot);
+            s.Rwr = new[] { new RwrContact { Id = 42, Tier = 2, Name = "SA-6" } };
+            var e = Obj(Arr(Root(s)["rwr"])[0]);
+            Assert.Equal(42.0, e["id"]);
+            Assert.Equal(2.0, e["tr"]);
+        }
+
         [Fact]
         public void Unit_contact_is_aircraft_flag_defaults_false()
         {

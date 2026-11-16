@@ -460,6 +460,7 @@ namespace NOXMFD
     internal struct RwrContact
     {
         public float  X, Z;    // emitter world position (GlobalPosition, same space as UnitInfo)
+        public uint   Id;      // the emitting unit's persistentID.Id (joins a contact to its RWR state)
         public byte   Tier;    // 0 search, 1 track (detected), 2 lock (we are its target)
         public float  Power;   // 0..1 closeness (1 = closest); -> radius from scope centre
         public float  Fresh;   // 0..1 ping freshness (1 = just pinged, fades to 0 over the tier TTL)
@@ -674,6 +675,13 @@ namespace NOXMFD
         // heuristic. Not a guarantee of "is an Aircraft component" — it mirrors BuildHsd's own
         // threshold (> 0.5f), which is the game's own continuous score, not a bool.
         public bool IsAircraft;
+
+        // The game's own unit category, as its TGT filter groups them (UnitDefinition subtype):
+        // 'a' aircraft, 'm' missile, 'g' ground vehicle, 's' ship, 'b' building, '\0' none of these.
+        // Subtype is that definition's own type (vehicleType / shipType / buildingType, e.g. "SAM",
+        // "RDR"), empty for aircraft and missiles. The Cougar target list filters and ranks by both.
+        public char   Category;
+        public string Subtype;
 
         // Peer-reported fuel (docs/atc-extension-support.md item 1) — FuelBroadcast.cs's own value
         // for this unit's controlling pilot, not a server-authoritative game read (the game has

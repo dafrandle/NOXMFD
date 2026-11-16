@@ -535,9 +535,9 @@ namespace NOXMFD
             {
                 if (i > 0) sb.Append(',');
                 sb.AppendFormat(CultureInfo.InvariantCulture,
-                    "{{\"x\":{0:0.0},\"z\":{1:0.0},\"tr\":{2},\"pw\":{3:0.000},\"fr\":{4:0.000},\"n\":\"{5}\",\"k\":{6}}}",
+                    "{{\"id\":{7},\"x\":{0:0.0},\"z\":{1:0.0},\"tr\":{2},\"pw\":{3:0.000},\"fr\":{4:0.000},\"n\":\"{5}\",\"k\":{6}}}",
                     items[i].X, items[i].Z, items[i].Tier, items[i].Power, items[i].Fresh,
-                    JsonLite.EscapeJson(items[i].Name ?? string.Empty), items[i].Kind);
+                    JsonLite.EscapeJson(items[i].Name ?? string.Empty), items[i].Kind, items[i].Id);
             }
             return sb.Append(']').ToString();
         }
@@ -659,6 +659,11 @@ namespace NOXMFD
                 // reader treats a missing "ac" as not-an-aircraft (`!u.ac`) and a missing "pf" as no
                 // fuel data (`pf >= 0` fails).
                 if (u.IsAircraft) sb.Append(",\"ac\":1");
+                // Category / subtype (UnitInfo.Category): the Cougar target list's filters. Left off
+                // when unknown, like ac.
+                if (u.Category != '\0') sb.Append(",\"c\":\"").Append(u.Category).Append('"');
+                if (!string.IsNullOrEmpty(u.Subtype))
+                    sb.Append(",\"k\":\"").Append(JsonLite.EscapeJson(u.Subtype)).Append('"');
                 if (u.HasPeerFuel)
                     sb.Append(",\"pf\":").Append(u.PeerFuelRatio.ToString("0.000", CultureInfo.InvariantCulture));
                 // Only while the pilot shows under a squad designation (docs/squad-callsign-names.md)

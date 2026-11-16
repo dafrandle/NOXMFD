@@ -1316,6 +1316,7 @@ namespace NOXMFD
                 GlobalPosition gp = u.GlobalPosition();
                 _rwrBuf.Add(new RwrContact
                 {
+                    Id    = u.persistentID.Id,
                     X     = gp.x,
                     Z     = gp.z,
                     Tier  = em.Tier,
@@ -1818,12 +1819,29 @@ namespace NOXMFD
                     // (above) — see UnitInfo.IsAircraft's own comment for why this isn't a new
                     // classification, just exposing an existing one.
                     IsAircraft = def.typeIdentity.air > 0.5f,
+                    Category = UnitCategory(def, out string subtype),
+                    Subtype = subtype,
                     HasPeerFuel = hasPeerFuel,
                     PeerFuelRatio = peerFuelRatio,
                     Excluded = IsTgtExcluded(tgtSel, u)
                 });
             }
             return _unitBuf.ToArray();
+        }
+
+        // The game's TGT category of a unit (UnitInfo.Category) and its definition's own subtype.
+        private static char UnitCategory(UnitDefinition def, out string subtype)
+        {
+            subtype = string.Empty;
+            switch (def)
+            {
+                case AircraftDefinition _:  return 'a';
+                case MissileDefinition _:   return 'm';
+                case VehicleDefinition v:   subtype = v.vehicleType.ToString(); return 'g';
+                case ShipDefinition sh:     subtype = sh.shipType.ToString(); return 's';
+                case BuildingDefinition b:  subtype = b.buildingType.ToString(); return 'b';
+                default:                    return '\0';
+            }
         }
 
         // Is this unit's radar currently jammed and (if known) by whom — see _jammedBy declaration.
