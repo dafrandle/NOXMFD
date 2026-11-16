@@ -39,6 +39,70 @@
     location.replace(url.toString());
   }
 
+  // Deleting a profile: off the list, its saved pages/pin/display, and its frame bindings on the game
+  // PC (cougar.clear). The window showing it stops saving it (deletedSelf), so closing doesn't bring
+  // it back, and goes to the picker.
+  let deletedSelf = false;
+  function deleteProfile(n) {
+    writeJson(PROFILES_KEY, profileList().filter(function (x) { return x !== n; }));
+    try { localStorage.removeItem('cougar-profile:' + n); } catch (e) {}
+    sendCommand('cougar.clear', { wname: n }).catch(function () {});
+    if (n === profile) { deletedSelf = true; openPicker(); return true; }
+    return false;
+  }
+
+  // One profile in a list (the picker's, MAIN's): its name opens it, the × on its right deletes it
+  // after an inline confirm (DELETE <NAME>? YES / NO). `current` marks this window's own.
+  function profileItem(n, opts) {
+    const item = document.createElement(opts.tag || 'span');
+    item.className = 'profile-item';
+    function normal() {
+      item.textContent = '';
+      item.classList.remove('confirm');
+      const open = document.createElement('button');
+      open.type = 'button';
+      open.className = opts.nameClass + (opts.current ? ' current' : '');
+      open.textContent = n;
+      if (opts.current) open.disabled = true;
+      else open.addEventListener('click', function () { openProfile(n); });
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'profile-del';
+      del.textContent = '×';
+      del.title = 'Delete ' + n;
+      del.setAttribute('aria-label', 'Delete ' + n);
+      del.addEventListener('click', confirm);
+      item.append(open, del);
+    }
+    function confirm() {
+      item.textContent = '';
+      item.classList.add('confirm');
+      const q = document.createElement('span');
+      q.className = 'profile-confirm';
+      q.textContent = 'DELETE ' + n + '?';
+      const yes = document.createElement('button');
+      yes.type = 'button';
+      yes.className = 'profile-yes';
+      yes.textContent = 'YES';
+      yes.addEventListener('click', function () { if (!deleteProfile(n)) opts.onDeleted(); });
+      const no = document.createElement('button');
+      no.type = 'button';
+      no.className = 'profile-no';
+      no.textContent = 'NO';
+      no.addEventListener('click', normal);
+      item.append(q, yes, no);
+    }
+    normal();
+    return item;
+  }
+
+  // The picker, from a profile's own window: the same window without ?mfd.
+  function openPicker() {
+    const url = new URL(location.href);
+    url.searchParams.delete('mfd');
+    location.assign(url.toString());
+  }
+
   // The `layout` key is what the CLASSIC and F-35 head guards read to redirect a fresh load. Leaving
   // for one of them records it, as the F-35 does; this document never reads it.
   function setLayout(name) { try { localStorage.setItem('layout', name); } catch (e) {} }
@@ -48,15 +112,12 @@
     mapTap.remove();
     const picker = document.getElementById('picker');
     const listEl = document.getElementById('picker-list');
-    profileList().forEach(function (n) {
-      const li = document.createElement('li');
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = n;
-      b.addEventListener('click', function () { openProfile(n); });
-      li.appendChild(b);
-      listEl.appendChild(li);
-    });
+    (function renderPicker() {
+      listEl.textContent = '';
+      profileList().forEach(function (n) {
+        listEl.appendChild(profileItem(n, { tag: 'li', nameClass: 'picker-profile', onDeleted: renderPicker }));
+      });
+    })();
     document.getElementById('picker-new').addEventListener('submit', function (e) {
       e.preventDefault();
       openProfile(document.getElementById('picker-name').value);
@@ -232,14 +293,30 @@
     const el    = document.createElement('div');
     const frame = document.createElement('iframe');
     // MAIN has no page of its own (its destinations are the labels), so the pane names the MFD instead:
-    // with two or more frames on the desk, the window says which one it is.
+    // with two or more frames on the desk, the window says which one it is. Under the name, the saved
+    // profiles as mouse buttons (renderProfiles): another one switches this window to it, NEW opens the
+    // picker to make one.
     const ident = document.createElement('div');
     el.className    = 'pane';
     frame.className = 'page-frame';
     frame.title     = 'page';
     ident.className = 'pane-ident';
-    ident.innerHTML = '<div class="pane-ident-brand">NO XMFD</div><div class="pane-ident-name"></div>';
+    ident.innerHTML = '<div class="pane-ident-brand">NO XMFD</div><div class="pane-ident-name"></div>' +
+                      '<div class="pane-ident-profiles"></div>';
     ident.querySelector('.pane-ident-name').textContent = profile;
+    const identProfiles = ident.querySelector('.pane-ident-profiles');
+    function renderProfiles() {
+      identProfiles.textContent = '';
+      profileList().forEach(function (n) {
+        identProfiles.appendChild(profileItem(n, { nameClass: 'ident-profile', current: n === profile, onDeleted: renderProfiles }));
+      });
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'ident-profile new';
+      add.textContent = 'NEW…';
+      add.addEventListener('click', openPicker);
+      identProfiles.appendChild(add);
+    }
     el.appendChild(frame);
     el.appendChild(ident);
     wireLayoutKeydown(frame);
@@ -523,6 +600,7 @@
       wpnNavKey = '';
       if (name === 'doc') docView = 'index';
       ident.hidden = name !== 'main';
+      if (name === 'main') renderProfiles();   // the list is shared: another window may have added one
       LayoutPages.navigateFrame(frame, PAGES[name] || (ExtNav.isExtensionPage(name) ? '/ext/' + name : 'about:blank'));
       forwardToPage();
       renderNav();
@@ -925,7 +1003,7 @@
   // ── Profile persistence ───────────────────────────────────────────────────────────────
   let saveTimer = null;
   function saveProfile() {
-    if (!portals.length) return;
+    if (!portals.length || deletedSelf) return;
     writeJson(PROFILE_KEY, Object.assign(captureLayoutState(), { display: display }));
   }
   function saveProfileSoon() {

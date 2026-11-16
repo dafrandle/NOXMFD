@@ -101,6 +101,65 @@ html, body {
 .pane-ident[hidden] { display: none; }
 .pane-ident-brand { font-size: 12px; opacity: 0.6; }
 .pane-ident-name { font-size: clamp(16px, 4vh, 30px); }
+/* The saved profiles under the name: mouse buttons (the frame keys around MAIN are its pages). */
+.pane-ident-profiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 90%;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+.ident-profile {
+  pointer-events: auto;
+  padding: 4px 10px;
+  border: 1px solid rgba(var(--no-label-rgb), 0.45);
+  border-radius: 2px;
+  background: none;
+  color: var(--no-label);
+  font: inherit;
+  font-size: clamp(11px, 2vh, 14px);
+  cursor: pointer;
+}
+.ident-profile.current { border-color: var(--no-amber); color: var(--no-amber); cursor: default; }
+.ident-profile.new { opacity: 0.7; }
+/* A profile with its delete × on the right, and the inline confirm that replaces it. */
+.profile-item { display: inline-flex; align-items: stretch; pointer-events: auto; }
+li.profile-item { display: flex; }
+li.profile-item > .picker-profile { flex: 1; width: auto; }
+.profile-item > .ident-profile, .profile-item > .picker-profile { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.profile-del, .profile-yes, .profile-no {
+  padding: 0 8px;
+  border: 1px solid rgba(var(--no-label-rgb), 0.45);
+  border-left: 0;
+  border-radius: 0 2px 2px 0;
+  background: none;
+  color: var(--no-label);
+  font: inherit;
+  font-size: clamp(12px, 2.2vh, 16px);
+  cursor: pointer;
+  opacity: 0.7;
+}
+.profile-item.confirm { gap: 0; }
+.profile-confirm {
+  padding: 4px 10px;
+  border: 1px solid var(--no-red);
+  border-radius: 2px 0 0 2px;
+  color: var(--no-red);
+  font-size: clamp(11px, 2vh, 14px);
+  white-space: nowrap;
+}
+.profile-yes { border-color: var(--no-red); color: var(--no-red); opacity: 1; border-radius: 0; font-size: clamp(11px, 2vh, 14px); }
+.profile-no { opacity: 1; font-size: clamp(11px, 2vh, 14px); }
+@media (hover: hover) {
+  .profile-del:hover { opacity: 1; color: var(--no-ink); background: var(--no-red); border-color: var(--no-red); }
+  .profile-yes:hover { color: var(--no-ink); background: var(--no-red); }
+  .profile-no:hover { color: var(--no-ink); background: var(--no-label); }
+}
+@media (hover: hover) {
+  .ident-profile:hover:not(:disabled) { background: var(--no-label); color: var(--no-ink); }
+}
 
 /* SOI focus ring on the focused pane, the same white ring the other layouts draw. Only meaningful in
    a split; in full view it rings the whole page area. */
@@ -273,7 +332,7 @@ html, body {
 .picker-tip { margin: 0 0 16px; font-size: 13px; line-height: 1.4; opacity: 0.75; }
 .picker-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .picker-btn,
-.picker-list button {
+.picker-list .picker-profile {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid rgba(var(--no-label-rgb), 0.45);
@@ -285,7 +344,7 @@ html, body {
   text-align: left;
   cursor: pointer;
 }
-.picker-list button:hover,
+.picker-list .picker-profile:hover,
 .picker-btn:hover { background: var(--no-label); color: var(--no-ink); }
 .picker-new { display: flex; gap: 6px; }
 .picker-new input {
