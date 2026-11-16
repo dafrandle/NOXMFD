@@ -4,6 +4,10 @@
    edges), the weapons as a text list (.sys-weapons) on the right, or across the bottom under both
    (body.sys-below). The front view, the pylon boxes and their lines are left out. */
 
+/* No glow on the damage / failure labels (afm.css's red text-shadow): at a Cougar pane's sizes it
+   blurs the small text rather than lighting it. */
+.afm-failure { text-shadow: none; }
+
 /* ── middle column ──────────────────────────────────────────────────────────────────── */
 .afm-header {
   min-height: 0;
