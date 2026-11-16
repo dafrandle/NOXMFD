@@ -81,6 +81,7 @@
     wpn: '/assets/shell/cougar/wpn/cougar-wpn.html',
     adi: '/assets/shell/cougar/avn/cougar-adi.html',
     avn: '/assets/shell/cougar/avn/cougar-eng.html',
+    fuel: '/assets/shell/cougar/avn/cougar-eng.html?fuel',
     hsi: '/assets/shell/cougar/avn/cougar-hsi.html',
     afm: '/assets/shell/cougar/avn/cougar-sys.html',
     rdr: '/assets/shell/cougar/rdr/cougar-rdr.html',
@@ -94,6 +95,7 @@
 
   const PAGE_FEEDS = {
     avn: ['avn'],
+    fuel: ['avn'],
     afm: ['avn'],
     adi: ['adi'],
     hsi: ['adi', 'mapinfo', 'wpt-routes'],
@@ -120,6 +122,16 @@
   const FEED_AS = { targets: 'tgt-targets' };
   const DERIVED = { loadout: true };
   const PAD_CURSOR_PAGES = { map: true, tgt: true, td: true, hud: true, rdr: true, wpt: true, rtd: true, spd: true, sqd: true, akf: true, doc: true, hsd: true, tgp: true };
+
+  // The AVN group's shared switch, NAV's with FUEL beside ENG: this layout splits the stock ENG page
+  // in two (cougar-eng.html is ENG, ?fuel is FUEL) so each half gets a whole Cougar pane.
+  const AVN_GROUP = [
+    { label: 'MAIN', action: 'main' }, { label: 'ADI', action: 'adi' }, { label: 'ENG', action: 'avn' },
+    { label: 'FUEL', action: 'fuel' }, { label: 'HSI', action: 'hsi' }, { label: 'SYS', action: 'afm' },
+  ];
+  function avnGroupItems(page) {
+    return AVN_GROUP.map(function (item) { return item.action === page ? Object.assign({ mark: true }, item) : item; });
+  }
 
   // MAIN's destinations beyond NAV's, as on the other layouts (f35.js MAIN_EXTRAS).
   const MAIN_EXTRAS = [
@@ -357,6 +369,8 @@
         if (docView === 'image') items.push({ label: 'INDX', action: 'doc-indx' });
       } else if (page === 'main') {
         items = (NAV.main || []).concat(MAIN_EXTRAS);
+      } else if (AVN_GROUP.some(function (item) { return item.action === page && page !== 'main'; })) {
+        items = avnGroupItems(page);
       } else {
         items = (NAV[page] || []).slice();
       }

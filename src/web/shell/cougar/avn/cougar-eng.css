@@ -1,10 +1,319 @@
-/* The COUGAR layout's ENG page, over pages/avn/avn.css. A cell of the stock 2x2 grid is half the
-   pane each way, so a dial there is min(w/2, h/2); in one row of four it is min(w/4, h). The row
-   draws larger exactly when the pane is more than twice as wide as tall: the short, wide pane of a
-   stacked split. The dials and their text size off their cell (cqmin), so nothing else changes. */
-@media (min-aspect-ratio: 2/1) {
-  .avn-gauge-grid {
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 1fr;
-  }
+/* The COUGAR layout's ENG and FUEL pages, over pages/avn/avn.css (cougar-eng.html). */
+
+/* ── The pane ────────────────────────────────────────────────────────────────────────
+   A Cougar pane never gets avn-layout, so avn.js always places .avn-content with its compact
+   12px margins; a Cougar pane is small enough that those are worth having back. */
+.avn-content.placed {
+  left: 0 !important;
+  top: 4px !important;
+  width: 100% !important;
+  height: calc(100% - 8px) !important;
+  padding: 0 4px;
+  gap: 4px;
 }
+
+/* ENG is the engine row (cards + throttle/heat); FUEL (?fuel, cougar-eng.js) is the fuel band. Each
+   takes the whole pane. */
+html:not(.cougar-fuel) .avn-fuel { display: none; }
+html.cougar-fuel .avn-top { display: none; }
+
+/* No glow on the dial text (avn.css's white text-shadow): at a Cougar pane's sizes it blurs the
+   small labels and values rather than lighting them. */
+.avn-gauge { text-shadow: none; }
+
+/* ── Bars: a faint scale behind, a see-through fill over it ─────────────────────────────
+   Every bar on this page shows its scale faintly behind the fill (the heat tape's own green ->
+   yellow -> red, avn.css), and the fill lets it (and the throttle's above-MIL zone) show through. */
+:root {
+  --cougar-fill-alpha: 0.75;
+  --cougar-scale-up: linear-gradient(to right,
+    color-mix(in srgb, var(--no-green) 30%, transparent),
+    color-mix(in srgb, var(--no-hsd-yellow) 30%, transparent) 50%,
+    color-mix(in srgb, var(--no-red) 30%, transparent));
+  --cougar-ab-zone: rgba(var(--no-nuclear-orange-rgb), 0.45);
+  --cougar-thr-fill: rgba(var(--no-white-rgb), 0.4);
+}
+
+/* Leading edges: the line that moves with a bar's fill (throttle handle, heat pointer, and the end of
+   each bar on an engine card in .bars) is one fixed colour. Fixed marks the fills move past (MIL
+   detent, each heat tick) take whichever colour stands out most against the bar under them, worked
+   out on every paint (cougar-eng.js, cougar-eng-contrast.js); these are the fallbacks until then. */
+:root { --cougar-edge: var(--no-white); }
+.avn-lever-handle { background: var(--cougar-edge); }
+.avn-heat-pointer { background: var(--cougar-edge); }
+.avn-lever-detent { background: var(--cougar-detent, var(--no-label)); }
+.avn-heat-tick, .avn-heat-tick.major { background: var(--cougar-tick, rgba(var(--no-white-rgb), 0.5)); }
+
+/* ── Boxes: quieter and tighter ───────────────────────────────────────────────────────
+   FAULT / INOP cards keep their amber / red border (avn.css, more specific): that is an alert. */
+:root { --cougar-box-border: color-mix(in srgb, var(--no-panel-border) 55%, transparent); }
+.avn-engine, .avn-pedestal, .avn-fuel {
+  border-color: var(--cougar-box-border);
+  border-radius: 3px;
+  padding: clamp(3px, 0.8vmin, 8px);
+}
+.avn-pedestal { background: none; }
+.avn-ped-reads { border-top-color: color-mix(in srgb, var(--no-panel-border) 55%, transparent); }
+.avn-top, .avn-side { gap: 4px; }
+.avn-engine { gap: 3px; }
+
+/* ── Engine card: status and HP in one pill ──────────────────────────────────────────
+   The card's status chip and its HP readout share one pill beside the name (.cougar-pill,
+   cougar-eng.js moves both in): "OK 100%", "FAULT 38%", "INOP 0%", "OK --" for an engine the game
+   doesn't rate. The pill fills from the left to the HP (--hp, avn.js) in the status colour, see-
+   through so the text over it stays white and readable at any level. avn.css's HP tape and its label
+   go, and the dials get their space. */
+.avn-engine-body, .avn-engine.mirror .avn-engine-body { flex-direction: column; gap: 3px; }
+.avn-hp { display: none; }
+.avn-engine-head { gap: 0.5em; }
+.cougar-pill {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 9em;
+  display: flex;
+  justify-content: center;
+  gap: 0.4em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0 0.6em;
+  font-size: 0.7em;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--no-green);
+  background: linear-gradient(to right, color-mix(in srgb, currentColor 40%, transparent) calc(var(--hp, 0) * 100%), transparent 0);
+}
+.avn-engine.fault .cougar-pill { color: var(--no-amber); }
+.avn-engine.inop .cougar-pill { color: var(--no-red); }
+.avn-engine .avn-engine-head .cougar-pill .avn-chip,
+.avn-engine .avn-engine-head .cougar-pill .avn-hp-val {
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: 1em;
+  color: var(--no-white);
+  visibility: visible;
+}
+.avn-engine-dials { flex: 1 1 0; min-height: 0; }
+
+/* ── Engine card: dials side by side, stacked, or as bars ─────────────────────────────
+   cougar-eng.js works this out per card from the space its dials have (cougar-eng-layout.js) and
+   sets one class: .dials-row (side by side), .dials-column (stacked), .dials-diagonal (opposite
+   corners, each --dial across) — whichever draws them largest — or .bars when even that would be
+   under 60px. These replace avn.css's own rule (side by side in a card body at least 13/10 wide).
+   Diagonal runs top-left to bottom-right, mirrored (top-right to bottom-left) on the cards right of
+   the throttle/heat, as avn.css mirrors them. In .bars each dial becomes a bar across the card's full
+   width with its label and value on a line of their own: above the bar for RPM (the top one), below
+   it for THR / PWR (the bottom one), so the two bars sit together between their text. A bar fills to
+   --v, the value cougar-eng.js publishes for each dial. */
+.avn-engine.dials-row .avn-engine-dials { flex-direction: row; }
+.avn-engine.dials-column .avn-engine-dials { flex-direction: column; }
+.avn-engine.dials-diagonal .avn-engine-dials { position: relative; }
+.avn-engine.dials-diagonal .avn-gauge {
+  position: absolute;
+  width: var(--dial);
+  height: var(--dial);
+}
+.avn-engine.dials-diagonal .avn-gauge.rpm { top: 0; left: 0; }
+.avn-engine.dials-diagonal .avn-gauge.out { bottom: 0; right: 0; }
+.avn-engine.mirror.dials-diagonal .avn-gauge.rpm { left: auto; right: 0; }
+.avn-engine.mirror.dials-diagonal .avn-gauge.out { right: auto; left: 0; }
+.avn-engine.fault { --avn-bar: var(--no-amber); }
+.avn-engine.inop  { --avn-bar: var(--no-white-dark); }
+.avn-engine.bars .avn-engine-dials { flex-direction: column; justify-content: center; gap: 2px; }
+.avn-engine.bars .avn-gauge, .avn-engine.bars .avn-gauge-dial-wrap { flex: 0 0 auto; height: auto; }
+.avn-engine.bars .avn-gauge-dial-wrap {
+  container-type: normal;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label val" "bar bar";
+  align-items: center;
+  gap: 1px 0.5em;
+  font-size: clamp(9px, 1.6vmin, 14px);
+}
+.avn-engine.bars .avn-gauge.out .avn-gauge-dial-wrap { grid-template-areas: "bar bar" "label val"; }
+.avn-engine.bars .avn-gauge-dial { display: none; }
+.avn-engine.bars .avn-gauge-label, .avn-engine.bars .avn-gauge-val {
+  position: static;
+  transform: none;
+  font-size: 1em;
+  letter-spacing: 0;
+}
+.avn-engine.bars .avn-gauge-label { grid-area: label; color: var(--no-label); font-weight: 400; }
+.avn-engine.bars .avn-gauge-dial-wrap::before {
+  content: '';
+  grid-area: bar;
+  height: 4px;
+  border-radius: 2px;
+  --edge: clamp(2px, calc(var(--v, 0) * 100%), 100%);
+  /* Top to bottom: the leading edge; the dial's scale marks (its tick ring: one every 10%, minor in
+     --no-white-dark, the major at 50% in --no-white-dim, as avn.css draws them; the 0% and 100%
+     majors are the bar's own ends); the fill; the scale gradient. */
+  background:
+    linear-gradient(to right, transparent calc(var(--edge) - 2px), var(--cougar-edge) calc(var(--edge) - 2px),
+                              var(--cougar-edge) var(--edge), transparent var(--edge)),
+    linear-gradient(to right, transparent calc(50% - 1px), var(--no-white-dim) calc(50% - 1px),
+                              var(--no-white-dim) calc(50% + 1px), transparent calc(50% + 1px)),
+    repeating-linear-gradient(to right, transparent 0, transparent calc(10% - 1px),
+                              var(--no-white-dark) calc(10% - 1px), var(--no-white-dark) 10%),
+    linear-gradient(to right, color-mix(in srgb, var(--avn-bar, var(--no-green)) calc(var(--cougar-fill-alpha) * 100%), transparent)
+                              calc(var(--v, 0) * 100%), transparent 0),
+    var(--cougar-scale-up);
+}
+.avn-engine.bars .avn-gauge-val { grid-area: val; text-align: right; }
+.avn-engine.bars .avn-gauge.readout .avn-gauge-dial-wrap::before { visibility: hidden; }
+.avn-engine.bars .avn-gauge.na .avn-gauge-dial-wrap::before { opacity: 0.4; }
+
+/* ── FUEL: one row, or two sections ──────────────────────────────────────────────────
+   cougar-eng.js lays the fuel band out whichever way draws the fuel dial larger
+   (CougarEngLayout.fuelArrangement): avn.css's row (dial, tank bars, readouts), or .fuel-stacked, two
+   sections: the dial and the burn / endurance / range readouts side by side on top, the tank bars
+   across the full width below, each in its own box. The padding and gap match FUEL_PAD / FUEL_GAP. */
+.avn-fuel.fuel-stacked {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 4px;
+  padding: 0;
+  border-color: transparent;
+}
+.avn-fuel.fuel-stacked::before {
+  content: '';
+  grid-area: 1 / 1 / 2 / -1;
+  border: 1px solid var(--cougar-box-border);
+  border-radius: 3px;
+}
+.avn-fuel.fuel-stacked > .avn-gauge.fuel { grid-area: 1 / 1; box-sizing: border-box; padding: 6px; }
+.avn-fuel.fuel-stacked > .avn-reads { grid-area: 1 / 2; padding: 6px; }
+.avn-fuel.fuel-stacked > .avn-tanks {
+  grid-area: 2 / 1 / 3 / -1;
+  border: 1px solid var(--cougar-box-border);
+  border-radius: 3px;
+  padding: 6px;
+}
+
+/* A leaking / burning tank: its LEAK / FIRE tag at the tank's mass size (shrinking only in a column
+   too narrow for four letters), white on a very dark shade of the alert colour inside a border of it,
+   rather than avn.css's small solid chip; and its fill striped in two shades of the alert colour. */
+.avn-tank-flag { font-size: max(7px, min(1em, 28cqw)); padding: 0 0.3em; }
+.avn-tank.leak .avn-tank-flag {
+  color: var(--no-white);
+  background: color-mix(in srgb, var(--no-amber) 18%, var(--no-black));
+  border-color: var(--no-amber);
+}
+.avn-tank.fire .avn-tank-flag {
+  color: var(--no-white);
+  background: color-mix(in srgb, var(--no-red) 18%, var(--no-black));
+  border-color: var(--no-red);
+}
+.avn-tank.leak .avn-tank-fill {
+  background: repeating-linear-gradient(-45deg, var(--no-amber) 0 3px, var(--no-nuclear-orange) 3px 6px);
+}
+.avn-tank.fire .avn-tank-fill {
+  background: repeating-linear-gradient(-45deg, var(--no-red) 0 3px, color-mix(in srgb, var(--no-red) 55%, var(--no-black)) 3px 6px);
+}
+
+/* ── Throttle and heat: one line under the cards ─────────────────────────────────────
+   In every pane the engine cards take the full width and throttle and heat share one line under them:
+   THRL, its bar, its readout, then HEAT, its bar, its readout. No box and no padding; each bar only as
+   thick as the text beside it is tall (1em of the pedestal's font). The lever's handle is a line at
+   the end of the throttle fill, the heat pointer one at the end of the heat fill, both inside their
+   bar; the MIL / AB / IDLE tags go (the readout names the zone) and the above-MIL zone is a layer of
+   the bar under the fill. --thr / --ab are (1 - value), avn.js. */
+.avn-top {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+#avn-side-l { grid-area: 1 / 1; }
+#avn-side-r { grid-area: 1 / 2; }
+.avn-top:has(#avn-side-r:empty) #avn-side-l { grid-column: 1 / -1; }
+.avn-pedestal {
+  grid-area: 2 / 1 / 3 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  align-items: center;
+  gap: 2px 6px;
+  padding: 0;
+  border: 0;
+  font-size: clamp(9px, 1.4vmin, 13px);
+}
+.avn-ped-heads, .avn-ped-instruments, .avn-ped-reads { display: contents; }
+.avn-ped-heads > span { color: var(--no-label); text-align: left; }
+.avn-ped-heads > span:nth-child(1) { grid-area: 1 / 1; }
+.avn-lever { grid-area: 1 / 2; height: 1em; }
+.avn-ped-reads > div:nth-child(1) { grid-area: 1 / 3; }
+.avn-ped-heads > span:nth-child(2) { grid-area: 1 / 4; padding-left: 0.6em; }
+.avn-heat { grid-area: 1 / 5; height: 1em; justify-content: stretch; }
+.avn-ped-reads > div:nth-child(2) { grid-area: 1 / 6; }
+.avn-ped-reads > div { flex-direction: row; align-items: baseline; gap: 0.4em; min-width: 5.5em; }
+.avn-ped-val { font-size: 1em; }
+.avn-ped-sub { min-height: 0; font-size: 1em; }
+
+.avn-lever-tag, .avn-lever-idle, .avn-lever-handle i, .avn-lever-ab { display: none; }
+.avn-lever-slot {
+  inset: 0;
+  width: auto;
+  margin: 0;
+  border-radius: 2px;
+  background:
+    linear-gradient(to right, var(--cougar-thr-fill) calc((1 - var(--thr)) * 100%), transparent 0),
+    linear-gradient(to left, var(--cougar-ab-zone) calc(var(--ab) * 100%), transparent 0),
+    var(--no-ink);
+}
+.avn-lever-detent {
+  z-index: 2;
+  left: calc((1 - var(--ab)) * 100% - 1px);
+  right: auto;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: auto;
+  margin: 0;
+}
+.avn-lever-handle {
+  z-index: 3;
+  top: 0;
+  left: calc((1 - var(--thr)) * (100% - 4px));
+  width: 4px;
+  max-width: none;
+  height: 100%;
+  padding: 0;
+  border-radius: 1px;
+  box-shadow: none;
+  transform: none;
+  transition: left 200ms linear;
+}
+.avn-heat-tape { width: 100%; height: 100%; margin: 0; }
+.avn-heat-scale { background: linear-gradient(to right, var(--no-green), var(--no-hsd-yellow) 50%, var(--no-red)); }
+.avn-heat-lit {
+  top: 0;
+  right: auto;
+  width: calc(var(--heat) * 100%);
+  height: 100%;
+  border-radius: 3px 0 0 3px;
+  opacity: var(--cougar-fill-alpha);
+  transition: width 200ms linear;
+}
+.avn-heat-pointer {
+  top: 0;
+  bottom: 0;
+  right: auto;
+  left: calc(var(--heat) * (100% - 2px));
+  width: 2px;
+  height: auto;
+  border: 0;
+  transition: left 200ms linear;
+}
+/* More than two cards (.ped-middle, cougar-eng.js): the line runs across the middle of them. The side
+   columns hand their cards to .avn-top's grid, which cougar-eng.js sizes and fills (engineGrid);
+   the line spans every column of its row. */
+.avn-top.ped-middle > .avn-side { display: contents; }
+.avn-top.ped-middle > .avn-pedestal { grid-column: 1 / -1; }
+/* The ticks' inline top (avn.html, for the stock upright tape) is replaced by a place along the bar. */
+.avn-heat-tick { top: auto !important; bottom: 0; width: 1px; height: 4px; }
+.avn-heat-tick.major { width: 1px; height: 6px; }
+.avn-heat-tick:nth-child(4) { left: 25%; }
+.avn-heat-tick:nth-child(5) { left: 50%; }
+.avn-heat-tick:nth-child(6) { left: 75%; }

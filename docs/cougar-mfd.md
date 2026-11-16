@@ -19,12 +19,31 @@ in game:
   small pane of a wide split. A row is its own select key (weapon.select). Selecting a weapon
   from a frame button is Stage 4.
 - The AVN pages and AKF are forks too, for the same reason: in the short pane of a wide split the
-  stock pages shrink (ADI and HSI are portrait SVGs scaled to the pane's height; ENG's 2x2 dials
-  each get a quarter of it) or bottom out at their vmin floors (AKF). `shell/cougar/avn/`: ADI and
-  HSI reuse their stock styles and math and move only the readouts — `cougar-avn-layout.js` picks
-  the stock arrangement or a wide one with the readouts in a column either side of the instrument,
-  whichever draws it larger. ENG is the stock page plus one rule: a pane more than twice as wide as
-  tall puts the four dials in one row. SYS runs `pages/afm/afm.js` unchanged and wraps its layout
+  stock pages shrink (ADI and HSI are portrait SVGs scaled to the pane's height; ENG stacks engine
+  cards over a fuel band, each squeezed flat) or bottom out at their vmin floors (AKF).
+  `shell/cougar/avn/`: ADI and HSI reuse their stock styles and math and move only the readouts —
+  `cougar-avn-layout.js` picks the stock arrangement or a wide one with the readouts in a column
+  either side of the instrument, whichever draws it larger. The stock ENG page (0.84.0's per-engine
+  rework) is split in two here: ENG and FUEL, two labels in the AVN group (`MAIN ADI ENG FUEL HSI
+  SYS`), both `cougar-eng.html` (FUEL is `?fuel`) running `pages/avn/avn.js` unchanged on its own
+  markup, each hiding the other half. `cougar-eng.js` wraps a few avn.js globals; the layout rules
+  are pure and tested (`cougar-eng-layout.js`, `cougar-eng-contrast.js`):
+  - ENG: the engine cards take the pane, throttle and heat share one line under them (across the
+    middle of the card rows with more than two cards, each card kept on its side; label, bar,
+    readout each; the bars as thick as their text, the above-MIL zone a layer under the throttle
+    fill). Each card's status and HP are one pill (`OK 100%`, `FAULT 38%`) filled to the HP in the
+    status colour. Each card places its two dials from its own space: side by side, stacked, or in
+    opposite corners, whichever draws them largest; under 60px they become two full-width bars with
+    the dial's scale marks (label and value above the top bar, below the bottom one).
+  - FUEL: the fuel dial, tank bars and burn / endurance / range in one row, or in two sections (dial
+    and readouts on top, tank bars below) wherever that draws the dial larger.
+  - Bars show a faint scale behind a see-through fill; leading edges are white; fixed marks the
+    fills pass (heat ticks, MIL detent) take black or white, whichever stands out against the bar
+    under them. No text glow (also off on SYS's failure labels): it blurs small text.
+  - The Cougar script decorates cards the stock code built before it loaded, since telemetry can
+    arrive while the page is still loading.
+
+  SYS runs `pages/afm/afm.js` unchanged and wraps its layout
   (`cougar-sys.js`; afm.js is a classic script, so its functions are globals every stock caller finds
   by name). Every pane is laid out across (`cougar-sys-layout.js`): the eight toggles as status chips
   on the left (the stock buttons, moved; with their icons where the pane has room, text where it
