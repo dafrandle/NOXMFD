@@ -126,6 +126,19 @@ html, body {
   pointer-events: none;
 }
 
+/* The side keys (L1-L5, R1-R5) sit a little off the page area's five equal tracks, to line up with
+   the frame's buttons: the column moves down --side-shift, and each neighbouring pair is
+   --side-squeeze closer, about the middle key (L3/R3 moves exactly --side-shift). */
+.glass { --side-shift: 5px; --side-squeeze: 1px; }
+.osb[data-osb="L1"], .osb[data-osb="R1"] { --side-step: 2; }
+.osb[data-osb="L2"], .osb[data-osb="R2"] { --side-step: 1; }
+.osb[data-osb="L3"], .osb[data-osb="R3"] { --side-step: 0; }
+.osb[data-osb="L4"], .osb[data-osb="R4"] { --side-step: -1; }
+.osb[data-osb="L5"], .osb[data-osb="R5"] { --side-step: -2; }
+.osb[data-osb^="L"], .osb[data-osb^="R"] {
+  transform: translateY(calc(var(--side-shift) + var(--side-step) * var(--side-squeeze)));
+}
+
 .nav-item {
   pointer-events: auto;
   padding: 3px 6px;
