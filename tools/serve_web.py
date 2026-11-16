@@ -215,8 +215,20 @@ def _map_page(telemetry_only=False):
     page = WEB / "services" / "telemetry-tap.html" if telemetry_only else WEB / "pages" / "map" / "map.html"
     html = page.read_text(encoding="utf-8")
     mock = MOCK.read_text(encoding="utf-8").strip()
-    injection = _capture_injection() + mock + "\n" + _wpt_seed_script()
+    injection = _capture_injection() + mock + "\n" + _mock_override_script() + _wpt_seed_script()
     return html.replace("</head>", injection + "</head>", 1).encode("utf-8")
+
+
+MOCK_OVERRIDE = PREV / "mock-override.js"
+
+
+def _mock_override_script():
+    """preview/mock-override.js (gitignored, optional), run right after the mock: a local, throwaway
+    way to change or animate the mock telemetry through its window.__setFrame hook (an aircraft to
+    test a page against, a sweep of values) without editing preview-mock.js. Absent: nothing."""
+    if not MOCK_OVERRIDE.exists():
+        return ""
+    return "<script>\n" + MOCK_OVERRIDE.read_text(encoding="utf-8") + "\n</script>\n"
 
 
 def _tgt_page():
