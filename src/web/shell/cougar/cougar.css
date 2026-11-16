@@ -157,6 +157,61 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
   .profile-yes:hover { color: var(--no-ink); background: var(--no-red); }
   .profile-no:hover { color: var(--no-ink); background: var(--no-label); }
 }
+.pane-ident-frame { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; letter-spacing: 1px; }
+.ident-frame-line { font-size: clamp(10px, 1.8vh, 13px); opacity: 0.8; }
+.ident-frame-line.missing { color: var(--no-amber); opacity: 1; }
+.ident-frame-row { display: flex; gap: 6px; }
+
+/* ── Binding wizard (cougar-wizard.js) ────────────────────────────────────────────────
+   A panel over the page area; the frame key it wants is marked on the glass. */
+.wizard {
+  grid-row: 2 / 7;
+  grid-column: 2 / 7;
+  align-self: center;
+  justify-self: center;
+  z-index: 6;
+  max-width: 88%;
+  padding: 14px 16px;
+  border: 1px solid var(--no-amber);
+  border-radius: 3px;
+  background: var(--no-bg);
+  color: var(--no-label);
+  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.wizard[hidden] { display: none; }
+.wizard-title { font-size: 12px; opacity: 0.75; }
+.wizard-msg { font-size: clamp(14px, 2.6vh, 19px); color: var(--no-white); }
+.wizard-sub, .wizard-hint { font-size: 11px; opacity: 0.75; }
+.wizard-note { font-size: 12px; color: var(--no-amber); max-width: 34em; }
+.wizard-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 4px; }
+.wizard-btn {
+  padding: 4px 10px;
+  border: 1px solid rgba(var(--no-label-rgb), 0.45);
+  border-radius: 2px;
+  background: none;
+  color: var(--no-label);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.wizard-btn:disabled { opacity: 0.35; cursor: default; }
+.wizard-btn.wizard-done, .wizard-btn.wizard-force { border-color: var(--no-amber); color: var(--no-amber); }
+@media (hover: hover) {
+  .wizard-btn:hover:not(:disabled) { background: var(--no-label); color: var(--no-ink); }
+}
+/* The frame key the wizard is waiting for. */
+@keyframes bind-pulse { 50% { box-shadow: 0 0 0 2px var(--no-amber); } }
+.osb.bind-target, .rocker-half.bind-target {
+  outline: 2px solid var(--no-amber);
+  outline-offset: -2px;
+  animation: bind-pulse 1s steps(1, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) { .osb.bind-target, .rocker-half.bind-target { animation: none; } }
 @media (hover: hover) {
   .ident-profile:hover:not(:disabled) { background: var(--no-label); color: var(--no-ink); }
 }

@@ -302,7 +302,7 @@
     frame.title     = 'page';
     ident.className = 'pane-ident';
     ident.innerHTML = '<div class="pane-ident-brand">NO XMFD</div><div class="pane-ident-name"></div>' +
-                      '<div class="pane-ident-profiles"></div>';
+                      '<div class="pane-ident-profiles"></div><div class="pane-ident-frame"></div>';
     ident.querySelector('.pane-ident-name').textContent = profile;
     const identProfiles = ident.querySelector('.pane-ident-profiles');
     function renderProfiles() {
@@ -600,7 +600,7 @@
       wpnNavKey = '';
       if (name === 'doc') docView = 'index';
       ident.hidden = name !== 'main';
-      if (name === 'main') renderProfiles();   // the list is shared: another window may have added one
+      if (name === 'main') { renderProfiles(); renderFrameStatus(); }   // the list is shared: another window may have added one
       LayoutPages.navigateFrame(frame, PAGES[name] || (ExtNav.isExtensionPage(name) ? '/ext/' + name : 'about:blank'));
       forwardToPage();
       renderNav();
@@ -794,9 +794,11 @@
     b.type = 'button';
     b.className = 'rocker-half';
     const half = function () { return r.spec && r.spec[which]; };
-    b.addEventListener('pointerdown', function () {
+    // A repeating half steps on press and repeats until release: the pointer's down/up here, a frame
+    // rocker's press/release through r[which + 'Hold'] (onFramePress).
+    function holdStart() {
       const h = half();
-      if (!h || !h.run || !h.repeat) return;
+      if (!h || !h.run || !h.repeat) return false;
       stopRepeat(r);
       h.run();
       r.timer = setTimeout(function rep() {
@@ -805,7 +807,10 @@
         cur.run();
         r.timer = setTimeout(rep, TGP_ZOOM_STEP_REPEAT_MS);
       }, TGP_ZOOM_STEP_INITIAL_DELAY_MS);
-    });
+      return true;
+    }
+    r[which + 'Hold'] = holdStart;
+    b.addEventListener('pointerdown', holdStart);
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { stopRepeat(r); }); });
     b.addEventListener('click', function (e) {
       const h = half();
@@ -1020,6 +1025,84 @@
     else if (m.act === 'load' && typeof m.id === 'string') loadById(m.id);
   }
 
+  // ── Frame binding (docs/cougar-mfd.md, OSB binding) ───────────────────────────────────
+  // The wizard (cougar-wizard.js) marks the key it wants on the glass: a face key's cell, or the
+  // rocker half's button.
+  const CougarWizard = CougarWizardUi.create({
+    profile: profile,
+    glass: glass,
+    target: function (input) {
+      const r = /^(tl|tr|bl|br)([-+])$/.exec(input);
+      if (r) return rockers[r[1]] ? rockers[r[1]][r[2] === '-' ? 'minus' : 'plus'] : null;
+      return osbEls[input] || null;
+    },
+    send: function (cmd, args) { sendCommand(cmd, args).catch(function () {}); },
+    onChange: function () { renderFrameStatus(); },
+  });
+
+  // MAIN's frame line, under the profiles: which frame drives this profile, whether it's connected,
+  // how much of it is bound, and the mouse buttons to bind it (the wizard) or re-pair it.
+  function renderFrameStatus() {
+    const st = CougarWizard.latest();
+    const p = CougarWizard.me();
+    const connected = !!(st && st.live && st.live.connected && st.live.connected[profile]);
+    const count = p && p.binds ? Object.keys(p.binds).length : 0;
+    document.querySelectorAll('.pane-ident-frame').forEach(function (el) {
+      el.textContent = '';
+      const line = document.createElement('div');
+      line.className = 'ident-frame-line';
+      if (!st) line.textContent = 'FRAME BINDING NEEDS THE GAME RUNNING';
+      else if (!p || !p.device) line.textContent = 'NO FRAME BOUND';
+      else {
+        line.textContent = (p.deviceName || 'FRAME') + ' · ' + (connected ? 'CONNECTED' : 'NOT FOUND') + ' · ' + count + ' / 28 BOUND';
+        line.classList.toggle('missing', !connected);
+      }
+      el.appendChild(line);
+      if (!st || CougarWizard.active()) return;
+      const row = document.createElement('div');
+      row.className = 'ident-frame-row';
+      const bind = document.createElement('button');
+      bind.type = 'button';
+      bind.className = 'ident-profile';
+      bind.textContent = 'BIND FRAME';
+      bind.addEventListener('click', function () { CougarWizard.startBind(); });
+      row.appendChild(bind);
+      if (p && p.device) {
+        const pair = document.createElement('button');
+        pair.type = 'button';
+        pair.className = 'ident-profile';
+        pair.textContent = 'RE-PAIR';
+        pair.title = 'Press any button on the frame that should drive ' + profile + ' (keeps its buttons)';
+        pair.addEventListener('click', function () { CougarWizard.startPair(); });
+        row.appendChild(pair);
+      }
+      el.appendChild(row);
+    });
+  }
+
+  // ── Frame presses (docs/cougar-mfd.md, OSB binding) ───────────────────────────────────
+  // The plugin reads the physical frame and sends every bound button's press and release to every
+  // window; this one acts on its own profile's. A press does exactly what clicking does, on press (a
+  // physical button can't be slid off): a face key clicks its label, a rocker half runs its half,
+  // and a repeating half (TGP zoom) repeats until the release.
+  function onFramePress(ev) {
+    if (!ev || ev.profile !== profile || CougarWizard.active()) return;
+    const input = String(ev.input || '');
+    const rocker = /^(tl|tr|bl|br)([-+])$/.exec(input);
+    if (rocker) {
+      const r = rockers[rocker[1]], which = rocker[2] === '-' ? 'minus' : 'plus';
+      if (!r) return;
+      if (!ev.down) { stopRepeat(r); return; }
+      if (r[which + 'Hold']()) return;          // repeating: stepped, and repeats until the release
+      const b = r[which];
+      if (!b.disabled) b.click();
+      return;
+    }
+    if (!ev.down || !osbEls[input]) return;
+    const label = osbEls[input].querySelector('.nav-item:not([disabled])');
+    if (label) label.click();
+  }
+
   // ── Message pump (as f35.js) ──────────────────────────────────────────────────────────
   const connLostBanner = document.getElementById('conn-lost-banner');
   const connLostBannerCtrl = ConnLostBanner.createController({
@@ -1047,6 +1130,8 @@
     if (e.source !== mapTap.contentWindow) return;
 
     if (m.type === 'soi-cid') { myCid = m.cid || ''; reportPanes(); return; }
+    if (m.type === 'cougar-press') { (Array.isArray(m.data) ? m.data : []).forEach(onFramePress); return; }
+    if (m.type === 'cougar-state') { CougarWizard.state(m.data); return; }
     if (m.type === 'soi')     { onSoiFocus(m); return; }
     if (m.type === 'soi-act') { onSoiAct(m.act); return; }
     if (m.type === 'cursor' || m.type === 'cursor-select' || m.type === 'cursor-held') {

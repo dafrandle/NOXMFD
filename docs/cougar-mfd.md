@@ -189,6 +189,34 @@ Target, ...) belong on the stick or throttle.
   window(s) holding that profile, so hold actions (combat-mode hold, W- hold) work.
 - Clicking a label stays a full fallback.
 
+**Built (Stage 5).** Only the bindings live on the game PC; the profile list, pages, PIN and
+brightness/contrast stay in the browser.
+- `Stores/CougarBindStore.cs` (`com.roque.NOXMFD.cougar.json`, beside the BepInEx config): per
+  profile name, the paired frame (`guid|name`) and the device button of each of the 28 inputs
+  (`T1`..`R5`, `B5`..`L1`, rocker halves `tl-`..`br+`). A profile is one frame: its first bind pairs
+  it, a button from another frame is refused, a button already bound is a conflict unless forced
+  (moved). Re-pairing keeps every button. Unit-tested (`tools/tests/CougarBindStoreTests.cs`).
+- `Input/CougarFrames.cs`, polled each frame from `MissionLifecycle` (main menu too): finds each
+  paired frame among Rewired's joysticks (`CougarFrameLogic.Find`: by instance GUID; by name only
+  when exactly one device of that model is connected, so two identical frames are never guessed
+  apart) and turns each bound button's change into a numbered press/release (`CougarPressLog`).
+  While the wizard has a capture armed it relays nothing and reads joysticks with the game
+  unfocused, as KEY's own capture does.
+- Commands: `cougar.arm` (wname = profile, bind = input or `pair`), `cougar.cancel`,
+  `cougar.force` (bind the reported conflicting button anyway), `cougar.set` (index = button, -1
+  clears: the wizard's undo/redo), `cougar.clear`.
+- SSE: `cougar` (bindings plus live state: connected frames, the capture's result) and
+  `cougar-press` (every press/release since the connection last sent). `telemetry-source.js` relays
+  both to the shell; the shell acts only on its own profile's, and only from its telemetry frame.
+- A press does what a click does, on press. A repeating rocker half (TGP zoom) repeats until the
+  release.
+- MAIN shows the frame under the profile buttons (name, connected or not, how many inputs bound)
+  with BIND FRAME (the wizard, `cougar-wizard.js` over `cougar-wizard-model.js`) and RE-PAIR (one
+  press on the frame that should drive this profile).
+- In flight the frame follows the game's focus like any joystick: with KEY's "input when game
+  unfocused" off, a click in an MFD window stops the frame until the game is focused again. The
+  wizard says so.
+
 ## Implementation plan
 
 The shell is built on the F-35's **portal** model, not CLASSIC's bezel. An F-35 portal

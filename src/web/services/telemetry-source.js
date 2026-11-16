@@ -166,6 +166,14 @@ export class TelemetrySource {
     es.addEventListener('sysdmg', (e) => {
       try { this._sysdmg = JSON.parse(e.data); this.rebroadcastSysdmg(); } catch (err) { /* malformed — skip this one */ }
     });
+    // Cougar OSB frames (docs/cougar-mfd.md): the bindings/wizard state, and frame button presses
+    // and releases. Every window gets every profile's; the Cougar shell acts on its own profile's.
+    es.addEventListener('cougar', (e) => {
+      try { this._postUp({ type: 'cougar-state', data: JSON.parse(e.data) }); } catch (err) { /* malformed — skip this one */ }
+    });
+    es.addEventListener('cougar-press', (e) => {
+      try { this._postUp({ type: 'cougar-press', data: JSON.parse(e.data) }); } catch (err) { /* malformed — skip this one */ }
+    });
     es.addEventListener('server-players', (e) => {
       try { this._postUp({ type: 'server-players-push', data: JSON.parse(e.data) }); } catch (err) { /* malformed — skip this one */ }
     });
