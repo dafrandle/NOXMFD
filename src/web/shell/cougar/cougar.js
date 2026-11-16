@@ -137,7 +137,12 @@
   // destinations are the OSB labels themselves.
   // WPN, the AVN pages, FCR/HSD, AKF and the MD text pages are this layout's own (wpn/, avn/, rdr/,
   // akf/, md/), laid out from a Cougar pane.
+  // TGT is this layout's target LIST (tgt/): enemy contacts on the frame keys, locked from there. The
+  // game's TARGET SELECTION page (the other layouts' TGT) is SEL, page id tgtsel.
+  const STOCK_TGT = LayoutPages.F35.tgt;
   const PAGES = Object.assign({}, LayoutPages.F35, {
+    tgt: '/assets/shell/cougar/tgt/cougar-tgt-list.html',
+    tgtsel: STOCK_TGT,
     lyt: '/lyt?cougar',
     wpn: '/assets/shell/cougar/wpn/cougar-wpn.html',
     adi: '/assets/shell/cougar/avn/cougar-adi.html',
@@ -161,7 +166,8 @@
     adi: ['adi'],
     hsi: ['adi', 'mapinfo', 'wpt-routes'],
     rwr: ['rwr', 'mw'],
-    tgt: ['tgt', 'targets', 'sqd-state', 'td-state-push'],
+    tgt: ['map-frame', 'hsd', 'td-state-push'],
+    tgtsel: ['tgt', 'targets', 'sqd-state', 'td-state-push'],
     td: ['targets', 'sqd-state', 'td-state-push'],
     tgp: ['tgp', 'sysdmg-push'],
     hud: ['hud-options-push'],
@@ -182,7 +188,7 @@
   };
   const FEED_AS = { targets: 'tgt-targets' };
   const DERIVED = { loadout: true };
-  const PAD_CURSOR_PAGES = { map: true, tgt: true, td: true, hud: true, rdr: true, wpt: true, rtd: true, spd: true, sqd: true, akf: true, doc: true, hsd: true, tgp: true };
+  const PAD_CURSOR_PAGES = { map: true, tgtsel: true, td: true, hud: true, rdr: true, wpt: true, rtd: true, spd: true, sqd: true, akf: true, doc: true, hsd: true, tgp: true };
 
   // The AVN group's shared switch, NAV's with FUEL beside ENG: this layout splits the stock ENG page
   // in two (cougar-eng.html is ENG, ?fuel is FUEL) so each half gets a whole Cougar pane.
@@ -232,8 +238,17 @@
   function canDo(action) {
     return has(action) || (action in MAP_ACTIONS) || (action in MASTER_ARMS_ACTIONS) ||
            (action in COMBAT_MODE_ACTIONS) || (action in TGP_VIEW_ACTIONS) || (action in TGP_IR_ACTIONS) ||
-           (action in TGP_ONESHOT);
+           (action in TGP_ONESHOT) || action === 'akf-compact' || /^list-pick:\d+$/.test(action);
   }
+
+  // The target LIST's keys, by pane: its contacts' keys (12 in full view, a split pane's 5), and the
+  // pane's top side keys for MAIN (left) and SEL (right).
+  const LIST_KEYS = {
+    full:   ['T1', 'T2', 'T3', 'T4', 'T5', 'B1', 'B2', 'B3', 'B4', 'B5', 'L5', 'R5'],
+    top:    ['T1', 'T2', 'T3', 'T4', 'T5'],
+    bottom: ['B1', 'B2', 'B3', 'B4', 'B5'],
+  };
+  function sideKeys(pane) { return pane === 'bottom' ? { left: 'L5', right: 'R5', row: 'B1' } : { left: 'L1', right: 'R1', row: 'T1' }; }
 
   const slices = Object.create(null);   // the tap's latest message, by type — shared by all portals
 
@@ -262,14 +277,12 @@
   document.querySelectorAll('.rocker').forEach(function (el) { rockerEls[el.dataset.rocker] = el; });
 
   // The side columns are as wide as their widest label (as f35.js fitOsb sizes the F-35's columns),
-  // so the page area gets the rest.
+  // so the page area gets the rest. The rockers don't count: they sit across the page area's corners
+  // (placeRockers), not in the columns.
   function fitSide() {
     let w = 0;
     O.LEFT.concat(O.RIGHT).forEach(function (id) {
       osbEls[id].querySelectorAll('.nav-item').forEach(function (n) { w = Math.max(w, n.scrollWidth, n.offsetWidth); });
-    });
-    Object.keys(rockerEls).forEach(function (k) {
-      rockerEls[k].querySelectorAll('.rocker-halves').forEach(function (n) { w = Math.max(w, n.scrollWidth); });
     });
     const next = Math.max(48, Math.ceil(w) + 6) + 'px';
     if (glass.style.getPropertyValue('--side') === next) return false;
@@ -302,7 +315,8 @@
     frame.title     = 'page';
     ident.className = 'pane-ident';
     ident.innerHTML = '<div class="pane-ident-brand">NO XMFD</div><div class="pane-ident-name"></div>' +
-                      '<div class="pane-ident-profiles"></div><div class="pane-ident-frame"></div>';
+                      '<div class="pane-ident-profiles"></div><div class="pane-ident-frame"></div>' +
+                      '<div class="pane-ident-fullonly">FULL SCREEN TO CHANGE PROFILE OR BIND THE FRAME</div>';
     ident.querySelector('.pane-ident-name').textContent = profile;
     const identProfiles = ident.querySelector('.pane-ident-profiles');
     function renderProfiles() {
@@ -379,6 +393,7 @@
     }
     function forwardToPage() {
       feedsFor(currentPage).forEach(forwardSlice);
+      postListPane();
       // A fresh document has a fresh listener; resend cursor focus if this pane holds it (f35.js).
       if (PAD_CURSOR_PAGES[currentPage] && focusedCursorWindow() === frameWin())
         frameWin().postMessage({ mfd: true, action: 'cursor-focus', on: true }, '*');
@@ -446,6 +461,23 @@
         if (docView === 'image') items.push({ label: 'INDX', action: 'doc-indx' });
       } else if (page === 'main') {
         items = (NAV.main || []).concat(MAIN_EXTRAS);
+      } else if (page === 'tgt') {
+        // LIST: MAIN and SEL on the pane's top side keys, a contact on each row key (cougar-tgt-list.js
+        // reports which slots hold one and whether it's locked; a locked one's key is lit).
+        const sk = sideKeys(pane);
+        items = [{ label: 'MAIN', action: 'main', osb: sk.left }, { label: 'SEL', action: 'tgtsel', osb: sk.right }];
+        const slots = (listState && listState.slots) || [];
+        LIST_KEYS[pane].forEach(function (key, i) {
+          if (slots[i]) items.push({ label: String(i + 1), action: 'list-pick:' + i, osb: key, mark: !!slots[i].locked, cls: 'tgt-lock' });
+        });
+      } else if (page === 'tgtsel') {
+        // SEL: LIST on the pane's first row key, MAIN on its top-left side key; TD (a squad leader's,
+        // TdNav) flows to the next row key, where it stood beside MAIN before.
+        const sk = sideKeys(pane);
+        items = [{ label: 'LIST', action: 'tgt', osb: sk.row }, { label: 'MAIN', action: 'main', osb: sk.left }]
+          .concat((NAV.tgt || []).filter(function (item) { return item.action !== 'main'; }));
+      } else if (page === 'akf') {
+        items = (NAV.akf || []).concat([{ label: 'CMPT', action: 'akf-compact' }]);
       } else if (AVN_GROUP.some(function (item) { return item.action === page && page !== 'main'; })) {
         items = avnGroupItems(page);
       } else {
@@ -477,6 +509,23 @@
     function setFollow(on) { followOn = on; mark('flw', followOn); }
     function setGrid(on) { gridOn = on; mark('grid', gridOn); }
     function setSlew(on) { slewOn = on; mark('slew', slewOn, 'blink'); }
+    // AKF's COMPACT label mirrors the page's own switch: the page reports it (akf-compact), and starts
+    // compact (cougar-akf.js).
+    let akfCompact = true;
+    // The target LIST's last report (list-state): its slots for the keys, its page for the rocker.
+    let listState = null;
+    function setListState(st) {
+      listState = st;
+      if (currentPage === 'tgt') renderNav();
+    }
+    // Tells the LIST page which keys it sits beside: its pane, and the height of L5/R5 in it.
+    function postListPane() {
+      const w = frameWin();
+      if (!w || currentPage !== 'tgt') return;
+      const fr = frame.getBoundingClientRect(), l5 = osbEls.L5.getBoundingClientRect();
+      w.postMessage({ mfd: true, type: 'list-pane', pane: pane, sideY: l5.top + l5.height / 2 - fr.top }, '*');
+    }
+    function setAkfCompact(on) { akfCompact = on; if (currentPage === 'akf') mark('akf-compact', akfCompact); }
     function setDocView(view) {
       const v = view === 'image' ? 'image' : 'index';
       if (v === docView) return;
@@ -507,6 +556,9 @@
         return;
       }
       if (action in MAP_ACTIONS)         { mapSend(MAP_ACTIONS[action]); return; }
+      if (action === 'akf-compact')      { mapSend('akf-compact'); return; }
+      const pick = /^list-pick:(\d+)$/.exec(action);
+      if (pick) { const w = frameWin(); if (w) w.postMessage({ mfd: true, action: 'list-pick', slot: +pick[1] }, '*'); return; }
       if (action in MASTER_ARMS_ACTIONS) { sendCommand('master-arms.set', { on: MASTER_ARMS_ACTIONS[action] }).catch(function () {}); return; }
       if (action in COMBAT_MODE_ACTIONS) { sendCommand('combat-mode.set', { group: COMBAT_MODE_ACTIONS[action] }).catch(function () {}); return; }
       if (action in TGP_VIEW_ACTIONS)    { sendCommand('tgp.view.set', { on: TGP_VIEW_ACTIONS[action] }).catch(function () {}); return; }
@@ -518,6 +570,7 @@
     // A label with a press-and-hold alternative (f35.js renderNav): tap does `action`, holding does
     // onHold instead.
     function wireHold(b, action, onHold) {
+      b.dataset.hold = '1';   // a frame press reaches it as down/up too (onFramePress)
       let holdTimer = null, holdFired = false;
       const clearHold = trackHold(function () { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } });
       b.addEventListener('pointerdown', function () {
@@ -542,11 +595,12 @@
       res.placed.forEach(function (p) {
         const item = p.item;
         const wired = canDo(item.action);
-        const b = makeButton(item.label, item.action, (wired ? '' : 'pending') + (item.mark ? ' on' : ''));
+        const b = makeButton(item.label, item.action, (wired ? '' : 'pending') + (item.mark ? ' on' : '') + (item.cls ? ' ' + item.cls : ''));
         if (!wired) b.disabled = true;
         else if (item.action in COMBAT_MODE_ACTIONS) wireHold(b, item.action, function () { sendCommand('combat-mode.set', { group: 'all' }).catch(function () {}); });
         else if (item.action === 'wpt-prev') wireHold(b, item.action, function () { mapSend('waypoint-reset'); });
         else if (item.action === 'slew') wireHold(b, item.action, function () { mapSend('slew-keypad'); });
+        else if (/^list-pick:/.test(item.action)) wireHold(b, item.action, function () { mapSend('list-pick-all'); });
         else b.addEventListener('click', function () { dispatch(item.action); });
         osbEls[p.osb].appendChild(b);
       });
@@ -555,6 +609,8 @@
       setSlew(slewOn);
       if (currentPage === 'wpn') { markMasterArms(); markCombatMode(); }
       if (currentPage === 'tgp') markTgp();
+      if (currentPage === 'akf') mark('akf-compact', akfCompact);
+      postListPane();
       if (onNavRendered) onNavRendered(api);
     }
 
@@ -580,6 +636,12 @@
         return { caption: 'PAGE ' + (st.page + 1) + '/' + (st.maxPage + 1),
                  prev: st.page > 0 ? function () { wpnPage = st.page - 1; forwardWpn(); } : null,
                  next: st.page < st.maxPage ? function () { wpnPage = st.page + 1; forwardWpn(); } : null };
+      }
+      if (currentPage === 'tgt') {
+        if (!listState || listState.pages < 2) return null;
+        return { caption: 'PAGE ' + (listState.page + 1) + '/' + listState.pages,
+                 prev: listState.page > 0 ? function () { mapSend('list-page-prev'); } : null,
+                 next: listState.page < listState.pages - 1 ? function () { mapSend('list-page-next'); } : null };
       }
       if (currentPage === 'doc' && docView === 'image') {
         return { caption: 'DOC',
@@ -617,11 +679,14 @@
       setGrid: setGrid,
       setSlew: setSlew,
       setDocView: setDocView,
+      setAkfCompact: setAkfCompact,
+      setListState: setListState,
       page: function () { return currentPage; },
       frameWin: frameWin,
       // Which keys this portal owns. Changing it moves the labels; the caller re-renders. A portal that
       // hasn't shown a page yet has drawn nothing, and must not clear keys another portal is using.
-      setPane: function (p) { if (currentPage !== null) clearOwnKeys(); pane = p; },
+      // Profiles and frame binding only from a full-view MAIN (cougar.css hides them in a split pane).
+      setPane: function (p) { if (currentPage !== null) clearOwnKeys(); pane = p; ident.classList.toggle('split', p !== 'full'); },
       pane: function () { return pane; },
       // The SOI cursor's targets: this portal's enabled labels in key order.
       navItems: function () {
@@ -680,6 +745,8 @@
   // split adds opens on MAIN, as the other layouts' new panes do.
   function setSplit(next) {
     if (next === split && portals.length) return;
+    // Binding is full-view only: splitting closes a wizard in progress.
+    if (next && CougarWizard && CougarWizard.active()) CougarWizard.cancel();
     if (!next) {
       while (portals.length > 1) portals.pop().destroy();
       split = null;
@@ -848,7 +915,63 @@
     if (r.cap.textContent !== cap) r.cap.textContent = cap;
     setHalf(r.minus, spec && spec.minus);
     setHalf(r.plus, spec && spec.plus);
+    placeRockersSoon();
   }
+
+  // Each corner rocker sits across its corner of the page area like the frame's own rocker: the line
+  // through its two halves is perpendicular to the page area's diagonal (that corner to the opposite
+  // one), and both halves touch the corner, one beside each edge. − is the left one of the pair, +
+  // the right. The caption sits in the screen's own corner, outside the pair. Placed from the page area's corners
+  // as measured (T1's bottom-left, B5's top-right), so it follows any window size; the halves are
+  // absolute in the glass (cougar.css).
+  function placeRockers() {
+    const g = glass.getBoundingClientRect();
+    const a = osbEls.T1.getBoundingClientRect(), z = osbEls.B5.getBoundingClientRect();
+    const L = a.left - g.left, T = a.bottom - g.top, R = z.right - g.left, B = z.top - g.top;
+    const W = R - L, H = B - T;
+    if (W <= 0 || H <= 0) return;
+    const CORNERS = { tl: [L, T, 1, 1], tr: [R, T, -1, 1], bl: [L, B, 1, -1], br: [R, B, -1, -1] };
+    Object.keys(rockers).forEach(function (corner) {
+      const r = rockers[corner], c = CORNERS[corner];
+      const px = c[0], py = c[1];
+      let vx = c[2] * W, vy = c[3] * H;              // into the page, toward the opposite corner
+      const n = Math.hypot(vx, vy);
+      vx /= n; vy /= n;
+      const ux = -vy, uy = vx;                       // perpendicular to that diagonal
+      // Both halves the same size, grown (never shrunk) to the width:height that lets each touch an
+      // edge right at the corner while the pair stays perpendicular to the diagonal: w/h = |ux|/|uy|.
+      [r.minus, r.plus].forEach(function (h) { h.style.width = h.style.height = ''; });
+      let w = Math.max(r.minus.offsetWidth, r.plus.offsetWidth), h = Math.max(r.minus.offsetHeight, r.plus.offsetHeight);
+      if (w / Math.abs(ux) > h / Math.abs(uy)) h = w * Math.abs(uy) / Math.abs(ux);
+      else w = h * Math.abs(ux) / Math.abs(uy);
+      [r.minus, r.plus].forEach(function (b) { b.style.width = w + 'px'; b.style.height = h + 'px'; });
+      const bw = w / 2, bh = h / 2;
+      // Far enough along the perpendicular that each half meets the page area at an edge.
+      const k = bw / Math.abs(ux);
+      const p1 = [px + k * ux, py + k * uy], p2 = [px - k * ux, py - k * uy];
+      const left = p1[0] <= p2[0] ? p1 : p2, right = left === p1 ? p2 : p1;
+      place(r.minus, left[0], left[1]);
+      place(r.plus, right[0], right[1]);
+      // The caption in the outer corner of the screen, clear of the pair.
+      r.cap.style.left = c[2] > 0 ? '2px' : 'auto';
+      r.cap.style.right = c[2] > 0 ? 'auto' : '2px';
+      r.cap.style.top = c[3] > 0 ? '2px' : 'auto';
+      r.cap.style.bottom = c[3] > 0 ? 'auto' : '2px';
+    });
+  }
+  // Centred on (x, y) in the glass.
+  function place(el, x, y) {
+    const left = x - el.offsetWidth / 2, top = y - el.offsetHeight / 2;
+    el.style.left = Math.round(left) + 'px';
+    el.style.top = Math.round(top) + 'px';
+  }
+  let placeQueued = false;
+  function placeRockersSoon() {
+    if (placeQueued) return;
+    placeQueued = true;
+    requestAnimationFrame(function () { placeQueued = false; placeRockers(); });
+  }
+  if (typeof ResizeObserver === 'function') new ResizeObserver(placeRockersSoon).observe(glass);
   function pmSpec(p) { return p ? p.rockerPM() : null; }
   function pagingSpec(p) {
     const pg = p ? p.rockerPaging() : null;
@@ -1027,8 +1150,8 @@
 
   // ── Frame binding (docs/cougar-mfd.md, OSB binding) ───────────────────────────────────
   // The wizard (cougar-wizard.js) marks the key it wants on the glass: a face key's cell, or the
-  // rocker half's button.
-  const CougarWizard = CougarWizardUi.create({
+  // rocker half's button. A var: setSplit checks it, and the first arrangement is set before this runs.
+  var CougarWizard = CougarWizardUi.create({
     profile: profile,
     glass: glass,
     target: function (input) {
@@ -1098,9 +1221,17 @@
       if (!b.disabled) b.click();
       return;
     }
-    if (!ev.down || !osbEls[input]) return;
+    if (!osbEls[input]) return;
     const label = osbEls[input].querySelector('.nav-item:not([disabled])');
-    if (label) label.click();
+    if (!label) return;
+    // A label with a hold action (wireHold) gets the press as down/up, so a long press is its hold
+    // and a short one its tap (on release). Every other label acts on press.
+    if (label.dataset.hold === '1') {
+      label.dispatchEvent(new PointerEvent(ev.down ? 'pointerdown' : 'pointerup', { bubbles: true }));
+      if (!ev.down) label.click();
+      return;
+    }
+    if (ev.down) label.click();
   }
 
   // ── Message pump (as f35.js) ──────────────────────────────────────────────────────────
@@ -1122,6 +1253,8 @@
       return;
     }
     if (m.type === 'doc-view') { portals.forEach(function (p) { if (p.frameWin() === e.source) p.setDocView(m.view); }); return; }
+    if (m.type === 'list-state') { portals.forEach(function (p) { if (p.frameWin() === e.source) p.setListState(m); }); return; }
+    if (m.type === 'akf-compact') { portals.forEach(function (p) { if (p.frameWin() === e.source) p.setAkfCompact(!!m.on); }); return; }
     if (m.type === 'lyt-act') {
       portals.forEach(function (p) { if (p.page() === 'lyt' && p.frameWin() === e.source) onLytAct(p, m); });
       return;

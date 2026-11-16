@@ -1,0 +1,85 @@
+/* The COUGAR layout's TGT LIST page (cougar-tgt-list.js lays the entries out). */
+html, body { height: 100%; margin: 0; overflow: hidden; background: var(--no-bg); }
+.tl-panel { position: absolute; inset: 0; font-family: var(--no-font); color: var(--no-white); }
+
+.tl-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tl-lines line { stroke: rgba(var(--no-label-rgb), 0.45); stroke-width: 1; }
+.tl-lines line.locked { stroke: var(--no-tgt-lock); stroke-width: 1.5; }
+
+.tl-entries { position: absolute; inset: 0; }
+.tl-entry {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 3px 3px 2px;
+  border: 1px solid color-mix(in srgb, var(--no-panel-border) 70%, transparent);
+  border-radius: 3px;
+  background: var(--no-bg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.15;
+}
+/* Selected for lock: a cyan border. Behind any contact locking us (its RWR LCK), selected or not:
+   dark red hazard stripes, dark enough that the text stays readable over both shades. */
+.tl-entry.locked { border-color: var(--no-tgt-lock); box-shadow: inset 0 0 0 1px var(--no-tgt-lock); }
+.tl-entry.locking-us {
+  background: repeating-linear-gradient(-45deg,
+    color-mix(in srgb, var(--no-red) 30%, var(--no-black)) 0 6px,
+    color-mix(in srgb, var(--no-red) 10%, var(--no-black)) 6px 12px);
+}
+/* Tracking us (its RWR TRK): the same stripes in amber. */
+.tl-entry.tracking-us {
+  background: repeating-linear-gradient(-45deg,
+    color-mix(in srgb, var(--no-amber) 24%, var(--no-black)) 0 6px,
+    color-mix(in srgb, var(--no-amber) 8%, var(--no-black)) 6px 12px);
+}
+.tl-entry.dim { opacity: 0.6; }
+.tl-icon-box { height: 18px; display: flex; align-items: center; justify-content: center; }
+.tl-icon { max-width: 26px; max-height: 18px; object-fit: contain; }
+/* No icon for this unit: a hollow white square in its place. */
+.tl-noicon { width: 12px; height: 12px; box-sizing: border-box; border: 1.5px solid var(--no-white); }
+.tl-name { max-width: 100%; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-entry.locked .tl-name { color: var(--no-tgt-lock); }
+.tl-range { color: var(--no-label); white-space: nowrap; }
+.tl-brg { display: flex; align-items: center; gap: 4px; color: var(--no-label); white-space: nowrap; }
+.tl-brg circle { fill: none; stroke: rgba(var(--no-label-rgb), 0.6); stroke-width: 1; }
+.tl-brg line.nose { stroke: rgba(var(--no-label-rgb), 0.6); stroke-width: 1; }
+.tl-brg line.dir { stroke: var(--no-white); stroke-width: 1.5; stroke-linecap: round; }
+.tl-entry.locked .tl-brg line.dir { stroke: var(--no-tgt-lock); }
+
+/* The tags, a list hanging out of the entry away from its key. */
+.tl-pills { position: absolute; display: flex; flex-direction: column; align-items: stretch; gap: 1px; pointer-events: none; }
+.tl-pills.up { flex-direction: column-reverse; }
+/* Crisp at 1:1: Share Tech Mono's advance is 0.54em (6.48px at 12px), so the letter-spacing makes it
+   exactly 7px (the JS pads each tag's left edge to a whole pixel), and the stroke thickens the stems
+   to cover a full pixel column instead of two half-lit ones. */
+.tl-tag { box-sizing: border-box; width: 100%; padding: 0; border: 1px solid currentColor; border-radius: 0; background: var(--no-bg); font-size: 12px; line-height: 14px; letter-spacing: 0.52px; -webkit-text-stroke: 0.5px currentColor; text-align: left; white-space: nowrap; overflow: hidden; }
+.tl-tag.threat { color: var(--no-red); }
+.tl-tag.warn { color: var(--no-amber); }
+.tl-tag.info { color: var(--no-green); }
+.tl-tag.dim { color: var(--no-gray); }
+
+.tl-centre {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+.tl-filter { font-size: 18px; font-weight: 700; color: var(--no-amber); }
+.tl-page { font-size: 12px; color: var(--no-label); }
+.tl-hint { font-size: 9px; color: var(--no-label); opacity: 0.7; max-width: 26em; }
+/* No room for three lines (cougar-tgt-list.js): filter and page side by side, the hint dropped. */
+/* A split pane has no L5/R5 entries beside the centre, so the line can use nearly the full width. */
+.tl-centre.tight { flex-direction: row; gap: 14px; left: 4%; right: 4%; white-space: nowrap; }
+.tl-centre.tight .tl-hint { display: none; }

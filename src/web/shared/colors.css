@@ -97,6 +97,9 @@
      list, HUD matches its HUD OPTIONS screen. Neither is --no-blue (a mod-only accent). */
   --no-friendly-blue: #4aa3ff;
   --no-hud-friendly:  #33ccff;
+  /* The COUGAR TGT LIST's contacts we've selected for lock (entry, its line and its frame key). Its
+     own token: a selection, not a friendly unit, so it stays put if those blues are retuned. */
+  --no-tgt-lock:      #33d6ff;
 
   /* MAP canvas symbology. Plain hex: map.js does hex math on unit colours (dimHex). */
   --no-route-cyan:    #39d0ff;   /* route line and markers not yet reached */

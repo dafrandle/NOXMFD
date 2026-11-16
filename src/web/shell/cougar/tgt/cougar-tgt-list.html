@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NO XMFD — TGT LIST (COUGAR)</title>
+<!--
+  The COUGAR layout's TGT page (docs/cougar-mfd.md): enemy contacts as a list, a page at a time, each
+  beside the frame key that locks or unlocks it. The game's TARGET SELECTION page is SEL.
+
+  Shell -> page (all {mfd:true, ...}):
+    'map-frame'      the telemetry frame (contacts, world, hdg, rwr, metric)
+    'hsd'            HSD's air-defence threat rings (threats: [{id, r}])
+    'td-state-push'  the squad's target designations
+    'list-pane'      { pane: 'full' | 'top' | 'bottom', sideY } — which keys this pane's slots sit on
+                     (12 in full view: T1-T5, B1-B5, L5, R5; 5 in a split pane), and L5/R5's height
+    action 'list-pick' (slot), 'list-pick-all', 'list-filter-prev/next', 'list-page-prev/next'
+  Page -> shell: 'list-state' { filter, page, pages, count, slots: [{ locked }] } (the key labels and
+  the paging rocker).
+-->
+<link rel="stylesheet" href="/assets/shared/font.css">
+<link rel="stylesheet" href="/assets/shared/theme.css">
+<link rel="stylesheet" href="/assets/shell/cougar/tgt/cougar-tgt-list.css">
+</head>
+<body>
+  <div class="tl-panel" id="tl-panel">
+    <svg class="tl-lines" id="tl-lines" aria-hidden="true"></svg>
+    <div class="tl-entries" id="tl-entries"></div>
+    <div class="tl-centre" id="tl-centre">
+      <div class="tl-filter" id="tl-filter">THREAT</div>
+      <div class="tl-page" id="tl-page">PAGE 1/1</div>
+      <div class="tl-hint">LONG-PRESS ANY TARGET KEY TO SELECT / DESELECT EVERYTHING ON THIS PAGE</div>
+    </div>
+  </div>
+<script src="/assets/pages/keybinds/keybinds-keymap.js"></script>
+<script src="/assets/services/remote-keybinds.js"></script>
+<script src="/assets/services/send-command.js"></script>
+<script src="/assets/shell/cougar/tgt/cougar-tgt-list-model.js"></script>
+<script src="/assets/shell/cougar/tgt/cougar-tgt-list.js"></script>
+</body>
+</html>

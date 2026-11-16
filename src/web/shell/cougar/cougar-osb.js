@@ -50,7 +50,9 @@
   //             keeps the view and colour switches a lock uses.
   //   md   — the MD group's shared switch (NAV.akf/mis/obj/bdf/pal): the kill feed (MD's landing
   //          page), the force boards and objectives, then mission info and documents.
-  const MD = ['main', 'akf', 'pal', 'bdf', 'obj', 'mis', 'doc'];
+  //          On AKF its COMPACT switch (akf-compact) comes before DOC, so in a split pane's seven keys
+  //          DOC is the one that goes to the second page.
+  const MD = ['main', 'akf', 'pal', 'bdf', 'obj', 'mis', 'akf-compact', 'doc'];
   const PRIORITY = {
     main: ['map', 'tgp', 'wpn', 'rdr', 'rwr', 'tgt', 'adi', 'akf', 'sqd', 'ext', 'hud'],
     akf: MD, mis: MD, obj: MD, bdf: MD, pal: MD,
@@ -84,7 +86,12 @@
     rdr: { caption: 'RANGE', minus: 'rng-out',       plus: 'rng-in',       minusLabel: 'R-', plusLabel: 'R+' },
     hsd: { caption: 'RANGE', minus: 'rng-out',       plus: 'rng-in',       minusLabel: 'R-', plusLabel: 'R+' },
     tgp: { caption: 'ZOOM',  minus: 'tgp-zoom-out',  plus: 'tgp-zoom-in',  minusLabel: 'Z-', plusLabel: 'Z+' },
-    tgt: SCROLL, td: SCROLL, hud: SCROLL, wpt: SCROLL, rtd: SCROLL, spd: SCROLL, sqd: SCROLL, doc: SCROLL,
+    // TGT is the target LIST here (its left rocker steps the filter); the game's TARGET SELECTION page
+    // is SEL (tgtsel), and keeps the list pages' scroll.
+    tgt: { caption: 'FILTER', minus: 'list-filter-prev', plus: 'list-filter-next', minusLabel: '◀', plusLabel: '▶' },
+    tgtsel: SCROLL, td: SCROLL, hud: SCROLL, wpt: SCROLL, rtd: SCROLL, spd: SCROLL, sqd: SCROLL, doc: SCROLL,
+    // AKF: the ALL/PLAYER divider, a step left or right (cougar-akf.js).
+    akf: { caption: 'SPLIT', minus: 'akf-split-left', plus: 'akf-split-right', minusLabel: '◀', plusLabel: '▶' },
   };
 
   // Actions a page's rocker already carries, so they never also take a face key.

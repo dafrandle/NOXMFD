@@ -212,10 +212,43 @@ brightness/contrast stay in the browser.
   release.
 - MAIN shows the frame under the profile buttons (name, connected or not, how many inputs bound)
   with BIND FRAME (the wizard, `cougar-wizard.js` over `cougar-wizard-model.js`) and RE-PAIR (one
-  press on the frame that should drive this profile).
+  press on the frame that should drive this profile). Profiles and binding are full-view only: a
+  split pane's MAIN says to go full screen instead, and splitting closes a wizard in progress.
 - In flight the frame follows the game's focus like any joystick: with KEY's "input when game
   unfocused" off, a click in an MFD window stops the frame until the game is focused again. The
   wizard says so.
+
+## TGT: the target LIST, and SEL
+
+MAIN's TGT opens this layout's own target LIST (`shell/cougar/tgt/`); the game's TARGET SELECTION page
+(the other layouts' TGT) is SEL (page id `tgtsel`).
+
+- LIST shows enemy contacts one per frame key: 12 in full view (T1-T5, B1-B5, L5, R5), 5 in a split
+  pane (its row). Each is drawn beside its key with a line to it: name (and the unit's map icon where
+  the entry has room), range and bearing, and tags (LCK / TRK / SRC from the RWR, IN RNG inside an
+  air-defence ring, HOT for an aircraft flying at us, TD, STALE when no friendly sensor sees it now or the game no longer trusts its position, with the
+  entry dimmed, JAM). A contact locking us sits on dark red stripes and one tracking us on amber
+  ones, selected or not; one we've selected has a cyan border, name and line, and its key is lit
+  cyan (`--no-tgt-lock`). A press locks or unlocks
+  it (target.select / target.deselect); a long press locks every contact on the page, or unlocks them
+  all once they all are. MAIN and SEL sit on the pane's top side keys.
+- The left rocker steps the filter, the right one the page. Filters, each a set and an order
+  (`cougar-tgt-list-model.js`, tested), most important first: THREAT AIR (aircraft on the RWR, hot,
+  or danger close: danger close (any aircraft within 2 km, tagged CLOSE), lock, track, on our six (hot, behind us and within 15 km, tagged SIX), hot, searching), THREAT GND (surface units on the RWR or with us inside their
+  ring: lock, track, in its ring, searching), THREAT GND AHEAD (THREAT GND within 30 deg of the nose,
+  plus air defence whose ring we're flying toward), THREAT AIR AHEAD (THREAT AIR, ahead), AHEAD AIR
+  and AHEAD GND (everything ahead, nearest first), AIR, SAM/AAA, RADAR,
+  GROUND (air defence, radar, armour/artillery, then the rest), SHIP, BLDG, TD, ALL, LOCKED. In every
+  filter datalink-only contacts sort after fresh ones, and stale ones last; ties go to the nearer.
+- When the centre is too short for its three lines (a 1/3 pane), the filter and page share one line
+  and the long-press hint is dropped, so the text keeps clear of the tags.
+- The plugin adds what the filters need to the telemetry: each contact's game category (`c`: a, m,
+  g, s, b) and subtype (`k`: TRUCK UGV LCV AFV MBT ART AAA IR_SAM R_SAM RDR, a ship's or building's
+  type), and the RWR emitter's unit `id`.
+- SEL: LIST on the pane's first row key, MAIN on its top-left side key, TD (a squad leader's) beside
+  LIST.
+- Labels with a hold action take a frame press as press and release, so a long press is the hold
+  and a short one the tap (on release); every other label acts on press.
 
 ## Implementation plan
 

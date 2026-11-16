@@ -161,6 +161,11 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
 .ident-frame-line { font-size: clamp(10px, 1.8vh, 13px); opacity: 0.8; }
 .ident-frame-line.missing { color: var(--no-amber); opacity: 1; }
 .ident-frame-row { display: flex; gap: 6px; }
+/* Profiles and frame binding only from a full-view MAIN: a split pane says so instead. */
+.pane-ident-fullonly { display: none; font-size: clamp(9px, 1.6vh, 12px); letter-spacing: 1px; opacity: 0.6; }
+.pane-ident.split .pane-ident-profiles,
+.pane-ident.split .pane-ident-frame { display: none; }
+.pane-ident.split .pane-ident-fullonly { display: block; }
 
 /* ── Binding wizard (cougar-wizard.js) ────────────────────────────────────────────────
    A panel over the page area; the frame key it wants is marked on the glass. */
@@ -240,10 +245,12 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
   pointer-events: none;
 }
 
-/* The side keys (L1-L5, R1-R5) sit a little off the page area's five equal tracks, to line up with
-   the frame's buttons: the column moves down --side-shift, and each neighbouring pair is
-   --side-squeeze closer, about the middle key (L3/R3 moves exactly --side-shift). */
-.glass { --side-shift: 5px; --side-squeeze: 1px; }
+/* The side keys (L1-L5, R1-R5) sit off the page area's five equal tracks, to line up with the
+   frame's buttons: the column moves down --side-shift, and each neighbouring pair is --side-squeeze
+   closer, about the middle key (L3/R3 moves exactly --side-shift). A percentage in translateY is of
+   the key's own cell, one track tall, so --side-squeeze can be a share of the spacing: here the
+   spacing is 8/9 of a track less 1px (cut by a third, then that gap widened by a third). */
+.glass { --side-shift: 8px; --side-squeeze: calc(100% / 9 + 8px / 9); }
 .osb[data-osb="L1"], .osb[data-osb="R1"] { --side-step: 2; }
 .osb[data-osb="L2"], .osb[data-osb="R2"] { --side-step: 1; }
 .osb[data-osb="L3"], .osb[data-osb="R3"] { --side-step: 0; }
@@ -279,6 +286,8 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
   color: var(--no-amber);
   outline: 1px solid var(--no-amber);
 }
+/* TGT LIST: a contact's key while it's selected for lock, in the list's lock colour. */
+.nav-item.on.tgt-lock { color: var(--no-tgt-lock); outline-color: var(--no-tgt-lock); }
 /* The SOI cursor — the label SELECT will press. Dark text on the SOI fill; the full-bleed selector
    keeps that fill from losing to the scrim, which would leave the dark text on a dark pill. */
 .nav-item.cursor,
@@ -304,6 +313,7 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
 @media (hover: hover) {
   .nav-item:hover:not(:disabled):not(.pending) { color: var(--no-ink); background: var(--no-label); }
   .nav-item.on:hover { color: var(--no-ink); background: var(--no-amber); }
+  .nav-item.on.tgt-lock:hover { background: var(--no-tgt-lock); }
   .rocker-half:hover:not(:disabled) { color: var(--no-ink); background: var(--no-label); }
 }
 
@@ -321,18 +331,15 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
 /* ── Rockers ───────────────────────────────────────────────────────────────────────────
    Each corner holds one rocker: a small caption naming what it does on this page, over its two
    halves. A blank rocker shows nothing. */
+/* The rocker's cell only holds its place in the grid: its caption and halves are absolute in the
+   glass, placed across the page area's corner by cougar.js placeRockers. */
 .rocker {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
+  position: static;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
 }
+.rocker-caption, .rocker-half { position: absolute; z-index: 2; }
+.rocker-halves { display: contents; }
 .rocker.tl { grid-row: 1; grid-column: 1; }
 .rocker.tr { grid-row: 1; grid-column: 7; }
 .rocker.bl { grid-row: 7; grid-column: 1; }
@@ -348,7 +355,6 @@ li.profile-item > .picker-profile { flex: 1; width: auto; }
   opacity: 0.7;
   white-space: nowrap;
 }
-.rocker-halves { display: flex; gap: 3px; }
 .rocker-half {
   min-width: 26px;
   min-height: 22px;
